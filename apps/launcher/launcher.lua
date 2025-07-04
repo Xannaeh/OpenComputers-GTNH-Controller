@@ -11,6 +11,7 @@ local function listApps()
             table.insert(apps, app:sub(1, -2))
         end
     end
+    table.sort(apps)
     return apps
 end
 
@@ -18,32 +19,41 @@ local function showMenu(apps)
     term.clear()
     term.setCursor(1, 1)
 
-    print("Available Apps:")
+    print("=== MAIN MENU ===\n")
+    print("=== STATUS ===")
+    print("- Power: [TODO]")
+    print("- Alerts: [TODO]")
+    print("- Notifications: [TODO]\n")
+
+    print("=== Programs ===")
     for i, app in ipairs(apps) do
         print(i .. ". " .. app)
     end
     print(#apps + 1 .. ". Exit")
-    print("\nEnter number to launch:")
 
+    print("\nSelect program number:")
     local choice = tonumber(term.read())
+
     if choice == #apps + 1 then
-        print("Goodbye!")
+        print("\nExiting launcher. Goodbye!")
         return false
     elseif choice and apps[choice] then
         local appPath = APPS_DIR .. apps[choice] .. "/" .. apps[choice] .. ".lua"
         local app = loadfile(appPath)
         if app then
+            term.clear()
+            term.setCursor(1, 1)
+            print("=== Running " .. apps[choice] .. " ===\n")
             app()
         else
-            print("Failed to load: " .. appPath)
+            print("Error: Failed to load " .. appPath)
         end
     else
-        print("Invalid choice.")
+        print("Invalid choice. Try again.")
     end
 
-    print("\nPress Enter to return to launcher...")
+    print("\nPress Enter to return to the Main Menu...")
     term.read()
-
     return true
 end
 
@@ -54,7 +64,6 @@ local function main()
             print("No apps found.")
             break
         end
-
         local keepGoing = showMenu(apps)
         if not keepGoing then break end
     end
