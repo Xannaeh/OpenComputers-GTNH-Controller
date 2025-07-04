@@ -16,7 +16,6 @@ local function splash()
     print("       \\/       \\/          \\/            \\/     \\/ ")
     print()
 
-    -- Safer random emoji
     local emoji = style.emojis[math.random(#style.emojis)]
 
     print("+--------------------------------------+")
@@ -29,12 +28,13 @@ local function splash()
     local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
     print(sparkle)
 
-    -- 🌸 Use the reusable signature helper!
+    -- ✅ This prints the cat & fortune, right here:
     style.printSignature()
 
     gpu.setForeground(style.text)
     os.sleep(0.2)
 end
+
 
 local function progressBar(message, total)
     io.write(message .. " [")
@@ -64,7 +64,9 @@ local function showMenu(apps)
     term.clear()
     term.setCursor(1, 1)
 
-    splash()
+    splash() -- draws header, sparkle, cat, fortune
+
+    -- 👉 Do NOT call term.clear() again! Just print status + menu after splash.
 
     gpu.setForeground(style.header)
     print("\n+-------------- STATUS ---------------+")
@@ -107,11 +109,11 @@ local function showMenu(apps)
         print("|          Have a pastel day! ✨        |")
         print("|                                      |")
         print("+--------------------------------------+")
-        gpu.setForeground(style.text)
-        -- New random sparkle bar for exit too!
-        local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
         gpu.setForeground(style.highlight)
+        local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
         print(sparkle)
+        -- Add signature at exit too, if you like:
+        style.printSignature()
         gpu.setForeground(style.text)
         os.exit()
     elseif choice and apps[choice] then
@@ -142,6 +144,7 @@ local function showMenu(apps)
     term.read()
     return true
 end
+
 
 local function main()
     while true do
