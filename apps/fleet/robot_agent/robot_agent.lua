@@ -3,17 +3,17 @@ local modem = component.modem
 local serialization = require("serialization")
 local event = require("event")
 local RobotRegistry = require("apps/fleet/RobotRegistry")
-local Pathfinder = require("apps/fleet/Pathfinder")
 
 local agent = {}
-agent.version = "4.0.0"
+agent.version = "4.0.1"
 
+-- ✅ Read ID
 local file = io.open("/robot_id.txt", "r")
 agent.id = file:read("*l")
 file:close()
-
 print("🤖 Robot ID: " .. agent.id)
 
+-- ✅ Check registry
 local reg = RobotRegistry.new()
 local data = reg:load()
 
@@ -29,23 +29,20 @@ if not info then
     print("❌ ERROR: Robot ID not found in registry!")
     return
 end
+
 print(("📍 Registered at: (%d,%d,%d)"):format(info.x or 0, info.y or 0, info.z or 0))
 
 agent.tasks = {}
 
 function agent:checkForUpdates()
     print("🔄 Checking for updates...")
-    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/robot_agent/robot_agent.lua -O /robot_agent.lua")
-    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/jobs/courier_job.lua -O /jobs/courier_job.lua")
+    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/robot_agent.lua -O /robot_agent.lua")
+    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/jobs/courier_job.lua -O /apps/fleet/jobs/courier_job.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/Pathfinder.lua -O /apps/fleet/Pathfinder.lua")
 end
 
-function agent:syncTasks()
-    -- Later: real sync with server
-end
-
 function agent:runJob(jobType, params)
-    local jobPath = "/jobs/" .. jobType .. "_job.lua"
+    local jobPath = "/apps/fleet/jobs/" .. jobType .. "_job.lua"
     local ok, jobFile = pcall(loadfile, jobPath)
     if not ok or not jobFile then
         print("⚠️ Could not load job: " .. jobPath)
@@ -81,11 +78,4 @@ function agent:start()
 end
 
 agent:checkForUpdates()
-agent:syncTasks()
 agent:start()
-
-
-if #me.tasks > 0 then
-    local taskId = me.tasks[1]
-    print("📝 Running first task: " .. taskId)
-end
