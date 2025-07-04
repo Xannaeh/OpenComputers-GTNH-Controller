@@ -23,11 +23,11 @@ end
 function RobotRegistry:register(id, jobType)
     local d = self:load()
     table.insert(d.robots, {
-        id      = id,
+        id = id,
         jobType = jobType,
-        status  = "idle",
-        active  = true,
-        tasks   = {},
+        status = "idle",
+        active = true,
+        tasks = {},
         x = 0,
         y = 64,
         z = 0
@@ -97,7 +97,8 @@ function RobotRegistry:list()
     for _, r in ipairs(d.robots) do
         if r.active then
             print(("🤖 %s [%s] – %s – Tasks: %d – Pos: (%d,%d,%d)"):format(
-                    r.id, r.jobType, r.status, #r.tasks, r.x, r.y, r.z))
+                    r.id, r.jobType, r.status, #r.tasks,
+                    r.x or 0, r.y or 0, r.z or 0))
         end
     end
 end

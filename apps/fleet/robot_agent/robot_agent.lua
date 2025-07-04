@@ -2,17 +2,24 @@ local component = require("component")
 local modem = component.modem
 local serialization = require("serialization")
 local event = require("event")
-local computer = require("computer")
 local RobotRegistry = require("apps/fleet/RobotRegistry")
 local Pathfinder = require("apps/fleet/Pathfinder")
 
 local agent = {}
-agent.version = "3.0.0"
+agent.version = "4.0.0"
 
--- Load robot ID
 local file = io.open("/robot_id.txt", "r")
 agent.id = file:read("*l")
 file:close()
+
+print("🤖 Robot ID: " .. agent.id)
+
+local info = RobotRegistry.new():find(agent.id)
+if not info then
+    print("❌ ERROR: Robot ID not found in registry!")
+    return
+end
+print(("📍 Registered at: (%d,%d,%d)"):format(info.x or 0, info.y or 0, info.z or 0))
 
 agent.tasks = {}
 
@@ -44,7 +51,7 @@ end
 
 function agent:start()
     modem.open(123)
-    print("📡 Listening + queue processor: " .. agent.id)
+    print("📡 Listening for tasks...")
     while true do
         local name, _, _, _, _, message = event.pull(0.1)
         if name == "modem_message" then

@@ -1,12 +1,9 @@
 local component = require("component")
 local serialization = require("serialization")
-local DataHelper = require("apps/DataHelper")
-local RobotRegistry = require("apps/fleet/RobotRegistry")
 local TaskRegistry = require("apps/fleet/TaskRegistry")
 
 print("🌸 Dispatcher starting...")
 
--- Find wireless modem only
 local modem = nil
 for addr, _ in component.list("modem") do
     local m = component.proxy(addr)
@@ -14,8 +11,6 @@ for addr, _ in component.list("modem") do
         modem = m
         print("✅ Found Wireless Network Card: " .. addr)
         break
-    else
-        print("⚠️ Found modem but not wireless: " .. addr)
     end
 end
 
@@ -25,7 +20,9 @@ if not modem then
 end
 
 local tasks = TaskRegistry.new():load().tasks
-local robots = RobotRegistry.new():load().robots
+
+-- Sort by priority (lower = higher)
+table.sort(tasks, function(a, b) return a.priority < b.priority end)
 
 local count = 0
 for _, task in ipairs(tasks) do
@@ -38,16 +35,20 @@ for _, task in ipairs(tasks) do
 
         local message = serialization.serialize(payload)
 
-        print("📡 Dispatching task: " .. task.id .. " ➜ " .. task.assignedRobot)
+        print("📡 Dispatching: " .. task.id .. " ➜ " .. task.assignedRobot)
         print("📦 Payload: " .. message)
 
         local ok = modem.broadcast(123, message)
-
         if ok then
             print("✅ Broadcast sent.")
             count = count + 1
         else
             print("❌ Broadcast failed.")
+        end
+
+        -- Handle subtasks immediately if any
+        if task.subtasks and #task.subtasks > 0 then
+            print("🔗 Subtasks: " .. table.concat(task.subtasks, ","))
         end
 
         os.sleep(0.5)
@@ -57,5 +58,5 @@ end
 if count == 0 then
     print("⚠️ No tasks to dispatch! Did you assign any?")
 else
-    print("🌸 All tasks dispatched!")
+    print("🌸 All tasks dispatched.")
 end
