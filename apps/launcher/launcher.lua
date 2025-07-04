@@ -42,7 +42,7 @@ local function showMenu(apps)
 
     if choice == #apps + 1 then
         print("\nGoodbye! Have a lovely day! (｡♥‿♥｡)")
-        return false
+        os.exit()
     elseif choice and apps[choice] then
         local appPath = APPS_DIR .. apps[choice] .. "/" .. apps[choice] .. ".lua"
         local app = loadfile(appPath)
