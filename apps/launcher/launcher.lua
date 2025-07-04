@@ -16,24 +16,33 @@ local function splash()
     print("       \\/       \\/          \\/            \\/     \\/ ")
     print()
 
-    -- Get random emoji from style
+    -- Random emoji
     local emoji = style.emojis[math.random(#style.emojis)]
 
-    -- Welcome box
     print("+--------------------------------------+")
     print("|                                      |")
     print("|   WELCOME TO THE GTNH CONTROLLER " .. emoji .. "  |")
     print("|                                      |")
     print("+--------------------------------------+")
 
-    -- Random sparkle bar from style
+    -- Random sparkle line
     gpu.setForeground(style.highlight)
     local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
     print(sparkle)
 
+    -- Tiny pastel ASCII cat
+    gpu.setForeground(style.highlight)
+    print(style.cat)
+
+    -- Random fortune
+    gpu.setForeground(style.text)
+    local fortune = style.fortunes[math.random(#style.fortunes)]
+    print(fortune)
+
     gpu.setForeground(style.text)
     os.sleep(0.2)
 end
+
 
 local function progressBar(message, total)
     io.write(message .. " [")
