@@ -3,12 +3,18 @@ local term = require("term")
 
 local APPS_DIR = "/apps/"
 
+local pink = "\27[35m"
+local white = "\27[37m"
+
 local function listApps()
     local apps = {}
     for app in fs.list(APPS_DIR) do
         local path = APPS_DIR .. app
         if fs.isDirectory(path) then
-            table.insert(apps, app:sub(1, -2))
+            local name = app:sub(1, -2)
+            if name ~= "launcher" then
+                table.insert(apps, name)
+            end
         end
     end
     table.sort(apps)
@@ -19,23 +25,23 @@ local function showMenu(apps)
     term.clear()
     term.setCursor(1, 1)
 
-    print("=== MAIN MENU ===\n")
-    print("=== STATUS ===")
-    print("- Power: [TODO]")
-    print("- Alerts: [TODO]")
-    print("- Notifications: [TODO]\n")
+    print(pink .. "=== ✨ MAIN MENU ✨ ===" .. white .. "\n")
+    print(pink .. "=== STATUS ===" .. white)
+    print(pink .. "♥ Power: [TODO]")
+    print("♥ Alerts: [TODO]")
+    print("♥ Notifications: [TODO]\n")
 
-    print("=== Programs ===")
+    print(pink .. "=== Programs ===" .. white)
     for i, app in ipairs(apps) do
-        print(i .. ". " .. app)
+        print(pink .. i .. ". " .. app .. white)
     end
-    print(#apps + 1 .. ". Exit")
+    print(pink .. (#apps + 1) .. ". Exit" .. white)
 
     print("\nSelect program number:")
     local choice = tonumber(term.read())
 
     if choice == #apps + 1 then
-        print("\nExiting launcher. Goodbye!")
+        print("\nGoodbye! Have a lovely day! (｡♥‿♥｡)")
         return false
     elseif choice and apps[choice] then
         local appPath = APPS_DIR .. apps[choice] .. "/" .. apps[choice] .. ".lua"
@@ -43,7 +49,7 @@ local function showMenu(apps)
         if app then
             term.clear()
             term.setCursor(1, 1)
-            print("=== Running " .. apps[choice] .. " ===\n")
+            print(pink .. "=== Running " .. apps[choice] .. " ===" .. white)
             app()
         else
             print("Error: Failed to load " .. appPath)
