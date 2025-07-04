@@ -1,33 +1,53 @@
+local fs = require("filesystem")
+
+local function ensureDir(path)
+    if not fs.exists(path) then
+        os.execute("mkdir " .. path)
+    end
+end
+
+local function ensureFile(path, url)
+    if not fs.exists(path) then
+        print("Downloading " .. path)
+        os.execute("wget -f " .. url .. " " .. path)
+    else
+        print("File exists: " .. path)
+    end
+end
+
 local function main()
     print("Creating folders...")
-    os.execute("mkdir /apps")
-    os.execute("mkdir /apps/launcher")
-    os.execute("mkdir /apps/fleet")
-    os.execute("mkdir /apps/fleet/robot_agent")
-    os.execute("mkdir /apps/fleet/jobs")
-    os.execute("mkdir /apps/power")
-    os.execute("mkdir /apps/net")
-    os.execute("mkdir /data")
+    ensureDir("/apps")
+    ensureDir("/apps/launcher")
+    ensureDir("/apps/fleet")
+    ensureDir("/apps/fleet/robot_agent")
+    ensureDir("/apps/fleet/jobs")
+    ensureDir("/apps/power")
+    ensureDir("/apps/net")
+    ensureDir("/data")
 
-    print("Downloading files...")
+    print("Downloading app files...")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/boot.lua /boot.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/launcher/launcher.lua /apps/launcher/launcher.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/fleet.lua /apps/fleet/fleet.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/Job.lua /apps/fleet/Job.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/RobotRegistry.lua /apps/fleet/RobotRegistry.lua")
+    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/TaskRegistry.lua /apps/fleet/TaskRegistry.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/robot_agent/robot_agent.lua /apps/fleet/robot_agent/robot_agent.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/jobs/courier_job.lua /apps/fleet/jobs/courier_job.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/power/power.lua /apps/power/power.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/net/net.lua /apps/net/net.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/DataHelper.lua /apps/DataHelper.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/Style.lua /apps/Style.lua")
-    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/config.json /data/config.json")
-    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/recipes.json /data/recipes.json")
-    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/machines.json /data/machines.json")
-    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/robots.json /data/robots.json")
-    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/tasks.json /data/tasks.json")
 
-    print("Done! Now run: boot.lua")
+    print("Ensuring data files...")
+    ensureFile("/data/config.json", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/config.json")
+    ensureFile("/data/recipes.json", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/recipes.json")
+    ensureFile("/data/machines.json", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/machines.json")
+    ensureFile("/data/robots.json", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/robots.json")
+    ensureFile("/data/tasks.json", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/tasks.json")
+
+    print("\n✅ Setup done! Now run: boot.lua")
 end
 
 main()
