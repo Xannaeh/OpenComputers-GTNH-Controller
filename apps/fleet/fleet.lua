@@ -1,8 +1,7 @@
--- 🌸 fleet.lua — Fleet Manager: Robots & Tasks Glue
+-- 🌸 fleet.lua — Show tasks only
 
 local term = require("term")
 local gpu = require("component").gpu
-local Job = require("apps/fleet/Job")
 local RobotRegistry = require("apps/fleet/RobotRegistry")
 local TaskRegistry = require("apps/fleet/TaskRegistry")
 local style = require("apps/Style")
@@ -12,50 +11,10 @@ local fleet = {
     tasks = TaskRegistry.new()
 }
 
--- Add a task
-function fleet:addTask(task)
-    self.tasks:add(task)
-end
-
--- Show tasks nicely
 function fleet:showTasks()
     self.tasks:list()
 end
 
--- Assign tasks to idle robots
-function fleet:assignTasks()
-    local tasksList = self.tasks:load().tasks
-    local robotsData = self.registry:load().robots
-
-    for _, task in ipairs(tasksList) do
-        if not task.deleted then
-            for _, robot in ipairs(robotsData) do
-                if robot.active and robot.status == "idle" and robot.jobType == task.jobType then
-                    gpu.setForeground(style.highlight)
-                    print("[ASSIGN] Task assigned to: " .. robot.id)
-                    robot.status = "busy"
-                    task.assigned = true
-                    self.registry:save()
-                    break
-                end
-            end
-        end
-    end
-
-    -- Remove completed tasks but keep history
-    local remaining = {}
-    for _, t in ipairs(tasksList) do
-        if not t.assigned then
-            table.insert(remaining, t)
-        end
-    end
-    self.tasks.tasks.tasks = remaining
-    self.tasks:save()
-
-    gpu.setForeground(style.text)
-end
-
--- Cute ASCII CLI menu
 function fleet:menu()
     term.clear()
     gpu.setForeground(style.header)
@@ -124,10 +83,9 @@ function fleet:menu()
         gpu.setForeground(style.text)
         self:showTasks()
         gpu.setForeground(style.highlight)
-        io.write("\nPress Enter to return to the menu...")
+        io.write("\nPress Enter to return...")
         gpu.setForeground(style.text)
         io.read()
-
     else
         gpu.setForeground(style.header)
         print("Goodbye, see you next mission! 🌙")
