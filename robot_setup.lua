@@ -43,4 +43,4 @@ else
     print("✅ robot_id.txt found.")
 end
 
-print("\n🎉 Robot ready! Now run: lua /robot_agent.lua")
+print("\n🎉 Robot ready! Now run: lua apps/fleet/robot_agent/robot_agent.lua")
