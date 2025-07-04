@@ -1,12 +1,11 @@
--- 📂 DataHelper.lua — shared JSON read/write for robots, tasks, config, etc.
-
+-- ✅ apps/DataHelper.lua
 local fs = require("filesystem")
 local ser = require("serialization")
 
 local DataHelper = {}
 
 function DataHelper.loadJson(path)
-    if not fs.exists(path) then return {} end
+    if not fs.exists(path) then return nil end
     local file = io.open(path, "r")
     local data = ser.unserialize(file:read("*a"))
     file:close()
