@@ -24,16 +24,17 @@ local function splash()
     print("|                                      |")
     print("+--------------------------------------+")
 
-    gpu.setForeground(style.highlight)
+    -- Random sparkle line
     local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
+    gpu.setForeground(style.highlight)
     print(sparkle)
 
-    -- ✅ This prints the cat & fortune, right here:
+    -- 💖 Run the helper — no more nil!
     style.printSignature()
 
     gpu.setForeground(style.text)
-    os.sleep(0.2)
 end
+
 
 
 local function progressBar(message, total)

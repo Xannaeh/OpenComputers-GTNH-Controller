@@ -13,7 +13,7 @@ style.header = style.colors.pink
 style.highlight = style.colors.blue
 style.text = style.colors.white
 
--- Safer emojis — keep to simple Unicode or ASCII-friendly
+-- Safe emojis for OpenComputers
 style.emojis = {
     "*.*",
     "^_^",
@@ -33,14 +33,14 @@ style.sparkleStyles = {
     "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~"
 }
 
--- Safe ASCII pastel cat
+-- Pastel ASCII cat
 style.cat = [[
  /\_/\
 ( o.o )
  > ^ <
 ]]
 
--- Random pastel fortune quotes
+-- Fortune quotes
 style.fortunes = {
     "You are the sparkle in the code ✨",
     "Pastel dreams build bright machines!",
@@ -50,7 +50,7 @@ style.fortunes = {
     "Stay cozy, craft cutely!"
 }
 
--- Tiny helper to print the cat + fortune
+-- ✅✅✅ This must be defined *inside* the table to export!
 function style.printSignature()
     local gpu = require("component").gpu
     gpu.setForeground(style.highlight)
