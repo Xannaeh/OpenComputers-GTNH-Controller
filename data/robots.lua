@@ -5,13 +5,15 @@ return {
       id      = "robot_001",
       jobType = "courier",
       status  = "idle",
-      active  = true
+      active  = true,
+      tasks = {}
     },
     {
       id      = "robot_002",
       jobType = "janitor",
       status  = "idle",
-      active  = false
+      active  = false,
+      tasks = {}
     }
   }
 }
