@@ -1,5 +1,3 @@
--- 🌸 fleet.lua — Fleet App glue, real tasks show
-
 local term = require("term")
 local gpu = require("component").gpu
 local RobotRegistry = require("apps/fleet/RobotRegistry")
@@ -11,7 +9,6 @@ local fleet = {
     tasks = TaskRegistry.new()
 }
 
--- Add task keeps working for future, uses DataHelper JSON
 function fleet:addTask(task)
     self.tasks:add(task)
 end
@@ -20,6 +17,23 @@ function fleet:showTasks()
     self.tasks:list()
 end
 
+function fleet:assignTasks()
+    local tasks = self.tasks:load().tasks
+
+    for _, t in ipairs(tasks) do
+        if not t.deleted and not t.assignedRobot then
+            local robot, robotData = self.registry:findBestRobot(t.jobType)
+            if robot then
+                -- Assign task to robot
+                self.registry:assignTask(robot.id, t.id)
+                self.tasks:assign(t.id, robot.id)
+                print("🔗 Assigned " .. t.id .. " ➜ " .. robot.id)
+            else
+                print("⚠️ No available robot for job type: " .. t.jobType)
+            end
+        end
+    end
+end
 
 function fleet:menu()
     term.clear()
@@ -43,6 +57,9 @@ function fleet:menu()
     gpu.setForeground(style.text) print("Show Tasks")
 
     gpu.setForeground(style.highlight) io.write("6. ")
+    gpu.setForeground(style.text) print("Deactivate Robot")
+
+    gpu.setForeground(style.highlight) io.write("7. ")
     gpu.setForeground(style.text) print("Exit")
 
     gpu.setForeground(style.header)
@@ -77,20 +94,26 @@ function fleet:menu()
             priority = 1,
             parent = nil,
             subtasks = {},
-            deleted = false
+            deleted = false,
+            assignedRobot = nil
         }
 
         self:addTask(task)
 
     elseif choice == "3" then
-        -- Placeholder, no real assign yet
-        print("Task assigning not yet implemented.")
+        self:assignTasks()
+        gpu.setForeground(style.highlight)
+        io.write("\nPress Enter to return to the menu...")
+        gpu.setForeground(style.text)
+        io.read()
+
     elseif choice == "4" then
         self.registry:list()
         gpu.setForeground(style.highlight)
         io.write("\nPress Enter to return to the menu...")
         gpu.setForeground(style.text)
         io.read()
+
     elseif choice == "5" then
         gpu.setForeground(style.header)
         print("\n+-------------- Tasks -----------------+")
@@ -100,6 +123,12 @@ function fleet:menu()
         io.write("\nPress Enter to return...")
         gpu.setForeground(style.text)
         io.read()
+
+    elseif choice == "6" then
+        gpu.setForeground(style.highlight) io.write("Robot ID to deactivate: ")
+        gpu.setForeground(style.text) local id = io.read()
+        self.registry:deactivate(id)
+
     else
         gpu.setForeground(style.header)
         print("Goodbye, see you next mission! 🌙")
