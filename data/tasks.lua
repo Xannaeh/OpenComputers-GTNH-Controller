@@ -1,10 +1,9 @@
--- /data/tasks.lua  (return a normal Lua table!)
 return {
   tasks = {
     {
-      id          = "task_001",
-      description = "Deliver item from A to B",
-      jobType     = "courier",
+      id = "task_001",
+      description = "Deliver iron",
+      jobType = "courier",
       priority    = 1,
       parent      = false,      -- nil/false is fine
       subtasks    = {},
@@ -12,8 +11,10 @@ return {
       params = {
         fromName = "BaseInputChest",
         toName = "BaseOutputChest",
-        count = 1
-      }
+        count = 10
+      },
+      assignedRobot = "robot_001",
+      deleted = false
     }
   }
 }
