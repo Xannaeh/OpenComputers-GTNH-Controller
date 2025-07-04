@@ -15,7 +15,7 @@ end
 if not foundWireless then
     print("⚠️ WARNING: No Wireless Network Card found! Add one to enable task broadcast/receive.")
 else
-    print("Wireless Network Card found")
+    print("Wireless Network Card found :D")
 end
 
 local function ensureDir(path)
