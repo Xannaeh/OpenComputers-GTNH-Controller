@@ -6,53 +6,40 @@ local style = require("apps/Style")
 
 local APPS_DIR = "/apps/"
 
-local function getScreenWidth()
-    local w, _ = gpu.getResolution()
-    return w
-end
-
-local function center(text)
-    local w = getScreenWidth()
-    local x = math.floor((w - #text) / 2)
-    gpu.set((x > 0 and x or 1), select(2, term.getCursor()), text)
-end
-
 local function sparkleLine()
     local sparkles = {"*", "+", "✦", "✧", "✩"}
-    local w = getScreenWidth()
-    local line = ""
-    for i = 1, w do
-        line = line .. sparkles[math.random(1, #sparkles)]
+    for i = 1, 40 do
+        gpu.setForeground(style.highlight)
+        io.write(sparkles[math.random(1, #sparkles)])
+        os.sleep(0.01)
     end
-    gpu.setForeground(style.highlight)
-    center(line)
+    print()
 end
 
 local function splash()
     gpu.setForeground(style.header)
-    center(" __      __       .__                              ")
-    center("/  \\    /  \\ ____ |  |   ____  ____   _____   ____ ")
-    center("\\   \\/\\/   // __ \\|  | _/ ___\\/  _ \\ /     \\_/ __ \\")
-    center(" \\        /\\  ___/|  |_\\  \\__(  <_> )  Y Y  \\  ___/")
-    center("  \\__/\\  /  \\___  >____/\\___  >____/|__|_|  /\\___  >")
-    center("       \\/       \\/          \\/            \\/     \\/ ")
+    print(" __      __       .__                              ")
+    print("/  \\    /  \\ ____ |  |   ____  ____   _____   ____ ")
+    print("\\   \\/\\/   // __ \\|  | _/ ___\\/  _ \\ /     \\_/ __ \\")
+    print(" \\        /\\  ___/|  |_\\  \\__(  <_> )  Y Y  \\  ___/")
+    print("  \\__/\\  /  \\___  >____/\\___  >____/|__|_|  /\\___  >")
+    print("       \\/       \\/          \\/            \\/     \\/ ")
     print()
-    gpu.setForeground(style.header)
-    center("+--------------------------------------+")
-    center("|                                      |")
-    center("|   WELCOME TO THE GTNH CONTROLLER ✨  |")
-    center("|                                      |")
-    center("+--------------------------------------+")
+    print("+--------------------------------------+")
+    print("|                                      |")
+    print("|   WELCOME TO THE GTNH CONTROLLER ✨  |")
+    print("|                                      |")
+    print("+--------------------------------------+")
     gpu.setForeground(style.text)
     sparkleLine()
-    os.sleep(0.5)
+    os.sleep(0.3)
 end
 
 local function progressBar(message, total)
     io.write(message .. " [")
     for i = 1, total do
         io.write("=")
-        os.sleep(0.05)
+        os.sleep(0.03)
     end
     print("]")
 end
@@ -79,24 +66,28 @@ local function showMenu(apps)
     splash()
 
     gpu.setForeground(style.header)
-    center("+-------------- STATUS ---------------+")
+    print("\n+-------------- STATUS ---------------+")
     gpu.setForeground(style.highlight)
-    center("♥ Power: [TODO]")
-    center("♥ Alerts: [TODO]")
-    center("♥ Notifications: [TODO]")
+    print("♥ Power: [TODO]")
+    print("♥ Alerts: [TODO]")
+    print("♥ Notifications: [TODO]")
     gpu.setForeground(style.header)
-    center("+-------------------------------------+\n")
+    print("+-------------------------------------+\n")
 
     gpu.setForeground(style.header)
-    center("+-------------- PROGRAMS -------------+")
+    print("+-------------- PROGRAMS -------------+")
     for i, app in ipairs(apps) do
         gpu.setForeground(style.highlight)
-        center(i .. ". " .. app)
+        io.write(i .. ". ")
+        gpu.setForeground(style.text)
+        print(app)
     end
     gpu.setForeground(style.highlight)
-    center((#apps + 1) .. ". Exit")
+    io.write((#apps + 1) .. ". ")
+    gpu.setForeground(style.text)
+    print("Exit")
     gpu.setForeground(style.header)
-    center("+-------------------------------------+")
+    print("+-------------------------------------+")
 
     print()
     gpu.setForeground(style.highlight)
@@ -109,12 +100,12 @@ local function showMenu(apps)
     if choice == #apps + 1 then
         term.clear()
         gpu.setForeground(style.header)
-        center("+--------------------------------------+")
-        center("|                                      |")
-        center("|   Thank you for using GTNH Control   |")
-        center("|          Have a great day! ✨        |")
-        center("|                                      |")
-        center("+--------------------------------------+")
+        print("+--------------------------------------+")
+        print("|                                      |")
+        print("|   Thank you for using GTNH Control   |")
+        print("|          Have a pastel day! ✨        |")
+        print("|                                      |")
+        print("+--------------------------------------+")
         gpu.setForeground(style.text)
         sparkleLine()
         os.exit()
