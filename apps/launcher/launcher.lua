@@ -17,12 +17,13 @@ end
 local function showMenu(apps)
     term.clear()
     term.setCursor(1, 1)
+
     print("Available Apps:")
     for i, app in ipairs(apps) do
         print(i .. ". " .. app)
     end
     print(#apps + 1 .. ". Exit")
-    print("Enter number to launch:")
+    print("\nEnter number to launch:")
 
     local choice = tonumber(term.read())
     if choice == #apps + 1 then
@@ -39,6 +40,10 @@ local function showMenu(apps)
     else
         print("Invalid choice.")
     end
+
+    print("\nPress Enter to return to launcher...")
+    term.read()
+
     return true
 end
 
@@ -49,6 +54,7 @@ local function main()
             print("No apps found.")
             break
         end
+
         local keepGoing = showMenu(apps)
         if not keepGoing then break end
     end
