@@ -1,5 +1,5 @@
-local Job = require("apps/fleet/Job")
-local Robot = require("apps/fleet/Robot")
+local Job = loadfile("/apps/fleet/Job.lua")()
+local Robot = loadfile("/apps/fleet/Robot.lua")()
 
 local function main()
     print("Fleet Manager Loaded")
