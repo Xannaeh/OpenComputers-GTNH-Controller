@@ -2,9 +2,10 @@ local component = require("component")
 local modem = component.modem
 local computer = require("computer")
 local serialization = require("serialization")
+local event = require("event")
 
 local agent = {}
-agent.version = "1.0.0"
+agent.version = "2.0.0"
 
 agent.tasks = {}
 
@@ -16,42 +17,48 @@ end
 
 function agent:syncTasks()
     print("🔗 Syncing tasks from base...")
-    -- In future: request tasks from base server
+    -- Optional future: pull tasks from file or server
 end
 
 function agent:runJob(jobType, params)
     local jobPath = "/jobs/" .. jobType .. "_job.lua"
-    local ok, job = pcall(loadfile, jobPath)
-    if not ok or not job then
+    local ok, jobFile = pcall(loadfile, jobPath)
+    if not ok or not jobFile then
         print("⚠️ Could not load job: " .. jobPath)
         return
     end
-    local handler = job()
-    if handler.run then
-        handler.run(params)
+    local job = jobFile()
+    if job.run then
+        job.run(params)
     else
         print("⚠️ Invalid job handler in " .. jobPath)
     end
 end
 
-function agent:listen()
+function agent:start()
     modem.open(123)
-    print("📡 Listening for tasks...")
+    print("📡 Listening + processing queue...")
     while true do
-        local eventName, _, from, port, _, message = computer.pullSignal()
-        if eventName == "modem_message" then
+        local name, _, from, port, _, message = event.pull(0.1)
+        if name == "modem_message" then
             print("💌 Got message: " .. message)
             local ok, task = pcall(serialization.unserialize, message)
             if ok and task and task.jobType then
-                print("🔨 Running job: " .. task.jobType)
-                self:runJob(task.jobType, task.params)
+                table.insert(self.tasks, task)
+                print("➕ Added to queue: " .. task.jobType)
             else
-                print("⚠️ Could not parse task payload")
+                print("⚠️ Bad task payload.")
             end
+        end
+
+        if #self.tasks > 0 then
+            local task = table.remove(self.tasks, 1)
+            print("🚚 Running task: " .. task.jobType)
+            self:runJob(task.jobType, task.params)
         end
     end
 end
 
 agent:checkForUpdates()
 agent:syncTasks()
-agent:listen()
+agent:start()

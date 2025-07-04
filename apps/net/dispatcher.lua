@@ -3,7 +3,7 @@ local serialization = require("serialization")
 
 print("🌸 Dispatcher starting...")
 
--- Find the correct wireless modem
+-- Find wireless modem only
 local modem = nil
 for addr, _ in component.list("modem") do
     local m = component.proxy(addr)
@@ -12,7 +12,7 @@ for addr, _ in component.list("modem") do
         print("✅ Found Wireless Network Card: " .. addr)
         break
     else
-        print("⚠️ Found a modem, but it’s not wireless: " .. addr)
+        print("⚠️ Found modem but not wireless: " .. addr)
     end
 end
 
@@ -21,25 +21,31 @@ if not modem then
     return
 end
 
--- Test task payload
-local task = {
-    jobType = "courier",
-    params = {
-        fromSide = 3,
-        toSide = 1,
-        count = 1
+-- Send multiple tasks!
+for i = 1, 3 do
+    local task = {
+        jobType = "courier",
+        params = {
+            fromSide = 3,
+            toSide = 1,
+            count = i
+        }
     }
-}
 
-local message = serialization.serialize(task)
+    local message = serialization.serialize(task)
 
-print("📡 Sending on port 123...")
-print("📦 Payload: " .. message)
+    print("📡 Sending task #" .. i .. " on port 123...")
+    print("📦 Payload: " .. message)
 
-local ok = modem.broadcast(123, message)
+    local ok = modem.broadcast(123, message)
 
-if ok then
-    print("✅ Broadcast sent successfully!")
-else
-    print("❌ Broadcast failed!")
+    if ok then
+        print("✅ Broadcast #" .. i .. " sent.")
+    else
+        print("❌ Broadcast #" .. i .. " failed.")
+    end
+
+    os.sleep(0.5) -- short delay
 end
+
+print("🌸 All test tasks dispatched!")
