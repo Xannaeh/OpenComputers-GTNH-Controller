@@ -6,35 +6,22 @@ local style = require("apps/Style")
 
 local APPS_DIR = "/apps/"
 
--- 🌸 Get screen width for centering
 local function getScreenWidth()
     local w, _ = gpu.getResolution()
     return w
 end
 
--- 🌸 Center a line
 local function center(text)
     local w = getScreenWidth()
     local x = math.floor((w - #text) / 2)
     gpu.set((x > 0 and x or 1), select(2, term.getCursor()), text)
 end
 
--- 🌈 Animated rainbow splash line
-local function rainbowSplashLine(text)
-    local colors = {
-        0xFF0000, -- red
-        0xFF7F00, -- orange
-        0xFFFF00, -- yellow
-        0x00FF00, -- green
-        0x0000FF, -- blue
-        0x4B0082, -- indigo
-        0x8B00FF  -- violet
-    }
-
-    for i = 1, #text do
-        local c = colors[(i % #colors) + 1]
-        gpu.setForeground(c)
-        io.write(text:sub(i,i))
+local function sparkleLine()
+    local sparkles = {"*", "+", "✦", "✧", "✩"}
+    for i = 1, 30 do
+        gpu.setForeground(style.highlight)
+        io.write(sparkles[math.random(1, #sparkles)])
         os.sleep(0.05)
     end
     print()
@@ -42,24 +29,21 @@ end
 
 local function splash()
     gpu.setForeground(style.header)
-    center(" __      __       .__                              ")
-    center("/  \\    /  \\ ____ |  |   ____  ____   _____   ____ ")
-    center("\\   \\/\\/   // __ \\|  | _/ ___\\/  _ \\ /     \\_/ __ \\")
-    center(" \\        /\\  ___/|  |_\\  \\__(  <_> )  Y Y  \\  ___/")
-    center("  \\__/\\  /  \\___  >____/\\___  >____/|__|_|  /\\___  >")
-    center("       \\/       \\/          \\/            \\/     \\/ ")
-    print()
-    rainbowSplashLine("✨ Welcome to the GTNH BaseController ✨")
+    center("+--------------------------------------+")
+    center("|                                      |")
+    center("|   WELCOME TO THE GTNH CONTROLLER ✨  |")
+    center("|                                      |")
+    center("+--------------------------------------+")
     gpu.setForeground(style.text)
+    sparkleLine()
     os.sleep(0.5)
 end
 
--- 🌸 Cute dot loader with progress bar
 local function progressBar(message, total)
     io.write(message .. " [")
     for i = 1, total do
         io.write("=")
-        os.sleep(0.1)
+        os.sleep(0.05)
     end
     print("]")
 end
@@ -86,14 +70,24 @@ local function showMenu(apps)
     splash()
 
     gpu.setForeground(style.header)
-    print("\n=== STATUS ===")
+    print("\n+-------------- STATUS ---------------+")
     gpu.setForeground(style.highlight)
+    io.write("♥ ")
+    gpu.setForeground(style.text)
     print("Power: [TODO]")
+    gpu.setForeground(style.highlight)
+    io.write("♥ ")
+    gpu.setForeground(style.text)
     print("Alerts: [TODO]")
-    print("Notifications: [TODO]\n")
+    gpu.setForeground(style.highlight)
+    io.write("♥ ")
+    gpu.setForeground(style.text)
+    print("Notifications: [TODO]")
+    gpu.setForeground(style.header)
+    print("+-------------------------------------+\n")
 
     gpu.setForeground(style.header)
-    print("=== Programs ===")
+    print("+-------------- PROGRAMS -------------+")
     for i, app in ipairs(apps) do
         gpu.setForeground(style.highlight)
         io.write(i .. ". ")
@@ -104,6 +98,8 @@ local function showMenu(apps)
     io.write((#apps + 1) .. ". ")
     gpu.setForeground(style.text)
     print("Exit")
+    gpu.setForeground(style.header)
+    print("+-------------------------------------+")
 
     print()
     gpu.setForeground(style.highlight)
@@ -114,9 +110,16 @@ local function showMenu(apps)
     progressBar("Launching", 10)
 
     if choice == #apps + 1 then
+        term.clear()
         gpu.setForeground(style.header)
-        print("\nGoodbye! Have a pastel day! 🌸")
+        center("+--------------------------------------+")
+        center("|                                      |")
+        center("|   Thank you for using GTNH Control   |")
+        center("|            Have a pastel day! ✨     |")
+        center("|                                      |")
+        center("+--------------------------------------+")
         gpu.setForeground(style.text)
+        sparkleLine()
         os.exit()
     elseif choice and apps[choice] then
         local appPath = APPS_DIR .. apps[choice] .. "/" .. apps[choice] .. ".lua"
