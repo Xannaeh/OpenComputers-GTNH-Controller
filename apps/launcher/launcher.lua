@@ -3,7 +3,7 @@ local term = require("term")
 
 local APPS_DIR = "/apps/"
 
--- 🌸 Pastel theme: best ANSI combo
+-- 🎀 Pastel theme
 local pink = "\27[35m"
 local blue = "\27[36m"
 local white = "\27[37m"
@@ -29,22 +29,22 @@ local function showMenu(apps)
 
     print(pink .. "=== ✨ MAIN MENU ✨ ===\n" .. white)
 
-    print(pink .. "=== STATUS ===")
-    print("♥ Power: [TODO]")
-    print("♥ Alerts: [TODO]")
-    print("♥ Notifications: [TODO]\n" .. white)
+    print(pink .. "=== STATUS ===" .. white)
+    print(blue .. "♥ " .. white .. "Power: [TODO]")
+    print(blue .. "♥ " .. white .. "Alerts: [TODO]")
+    print(blue .. "♥ " .. white .. "Notifications: [TODO]\n")
 
     print(pink .. "=== Programs ===" .. white)
     for i, app in ipairs(apps) do
-        print(pink .. i .. ". " .. app .. white)
+        print(blue .. i .. ". " .. white .. app)
     end
-    print(pink .. (#apps + 1) .. ". Exit" .. white)
+    print(blue .. (#apps + 1) .. ". Exit" .. white)
 
     print("\n" .. blue .. "Select program number:" .. white)
     local choice = tonumber(term.read())
 
     if choice == #apps + 1 then
-        print("\nGoodbye! Have a lovely day! (｡♥‿♥｡)")
+        print("\n" .. pink .. "Goodbye! Have a lovely day! (｡♥‿♥｡)" .. white)
         os.exit()
     elseif choice and apps[choice] then
         local appPath = APPS_DIR .. apps[choice] .. "/" .. apps[choice] .. ".lua"
