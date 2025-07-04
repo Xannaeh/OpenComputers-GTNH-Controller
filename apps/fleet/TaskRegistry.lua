@@ -6,45 +6,39 @@ TaskRegistry.__index = TaskRegistry
 function TaskRegistry.new()
     local self = setmetatable({}, TaskRegistry)
     self.path = "/data/tasks.json"
+    self.tasks = self:load() -- keep the whole {"tasks": []} table
     return self
 end
 
 function TaskRegistry:load()
-    local loaded = DataHelper.loadJson(self.path)
-    if not loaded then
-        print("[DEBUG] No tasks file found or empty. Returning empty list.")
-        return { tasks = {} }
-    end
-    print("[DEBUG] Loaded tasks.json:")
-    for k, v in pairs(loaded) do
-        print("[DEBUG] key: " .. tostring(k) .. ", value type: " .. type(v))
-    end
-    return loaded
+    return DataHelper.loadJson(self.path) or { tasks = {} }
 end
 
-function TaskRegistry:list()
-    local fresh = self:load()
-    if #fresh.tasks == 0 then
-        print("[DEBUG] No tasks to show.")
-    end
-    for _, task in ipairs(fresh.tasks) do
-        print("[DEBUG] Inspecting task table:")
-        for k, v in pairs(task) do
-            print("[DEBUG] " .. tostring(k) .. " = " .. tostring(v))
-        end
-        if not task.deleted then
-            print("📝 " .. task.id .. " — " .. task.description .. " [" .. task.jobType .. "]")
-        else
-            print("[DEBUG] Skipping deleted task: " .. task.id)
-        end
-    end
+function TaskRegistry:save()
+    DataHelper.saveJson(self.path, self.tasks)
 end
 
 function TaskRegistry:add(task)
-    local fresh = self:load()
-    table.insert(fresh.tasks, task)
-    DataHelper.saveJson(self.path, fresh)
-    print("[DEBUG] Added task & saved.")
+    table.insert(self.tasks.tasks, task)
+    self:save()
+end
+
+function TaskRegistry:list()
+    print("[DEBUG] Loaded tasks.json:")
+    for key, value in pairs(self.tasks) do
+        print("[DEBUG] key:", key, ", value type:", type(value))
+    end
+
+    for _, task in ipairs(self.tasks.tasks) do
+        print("[DEBUG] Inspecting task table:")
+        for k, v in pairs(task) do
+            print("[DEBUG] " .. k .. " = " .. tostring(v))
+        end
+
+        if not task.deleted then
+            print("📝 " .. task.id .. " — " .. task.description .. " [" .. task.jobType .. "]")
+        end
+    end
 end
 
 return TaskRegistry
