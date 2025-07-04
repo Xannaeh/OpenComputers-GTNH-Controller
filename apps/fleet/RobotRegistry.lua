@@ -1,5 +1,4 @@
-local fs = require("filesystem")
-local ser = require("serialization")
+local DataHelper = require("apps/DataHelper")
 
 local RobotRegistry = {}
 RobotRegistry.__index = RobotRegistry
@@ -12,11 +11,11 @@ function RobotRegistry.new()
 end
 
 function RobotRegistry:load()
-    return loadJson(self.path) or {robots = {}}
+    return DataHelper.loadJson(self.path) or {robots = {}}
 end
 
 function RobotRegistry:save()
-    saveJson(self.path, self.robots)
+    DataHelper.saveJson(self.path, self.robots)
 end
 
 function RobotRegistry:register(id, jobType)
