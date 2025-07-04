@@ -27,7 +27,7 @@ print("📂 Ensuring folders...")
 ensureDir("/apps")
 ensureDir("/apps/fleet")
 ensureDir("/apps/fleet/jobs")
-ensureDir("/data")
+ensureDir("/data")  -- ✅ Ensure /data before downloading!
 
 print("📥 Downloading robot files...")
 os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/DataHelper.lua /apps/DataHelper.lua")
@@ -35,9 +35,7 @@ os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH
 os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/Pathfinder.lua /apps/fleet/Pathfinder.lua")
 os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/robot_agent/robot_agent.lua /robot_agent.lua")
 os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/jobs/courier_job.lua /apps/fleet/jobs/courier_job.lua")
-
--- ✅ Pull the robots data
-os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/robots.lua /data/robots.lua")
+os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/robots.lua /data/robots.lua")  -- ✅ This will now succeed!
 
 if not fs.exists("/robot_id.txt") then
     print("⚠️ robot_id.txt not found — create one with the robot’s ID to link it to registry!")
