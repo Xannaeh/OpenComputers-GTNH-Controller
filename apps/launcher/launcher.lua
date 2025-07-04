@@ -31,10 +31,13 @@ local function splash()
     -- 💖 Run the helper — no more nil!
     style.printSignature()
 
+    -- Random sparkle line
+    local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
+    gpu.setForeground(style.highlight)
+    print(sparkle)
+
     gpu.setForeground(style.text)
 end
-
-
 
 local function progressBar(message, total)
     io.write(message .. " [")
@@ -64,16 +67,29 @@ local function showMenu(apps)
     term.clear()
     term.setCursor(1, 1)
 
-    splash() -- draws header, sparkle, cat, fortune
-
-    -- 👉 Do NOT call term.clear() again! Just print status + menu after splash.
+    splash()
 
     gpu.setForeground(style.header)
     print("\n+-------------- STATUS ---------------+")
+
+    -- Power
     gpu.setForeground(style.highlight)
-    print("♥ Power: [TODO]")
-    print("♥ Alerts: [TODO]")
-    print("♥ Notifications: [TODO]")
+    io.write("♥ ")
+    gpu.setForeground(style.text)  -- ✅ switch to white
+    print("Power: [TODO]")
+
+    -- Alerts
+    gpu.setForeground(style.highlight)
+    io.write("♥ ")
+    gpu.setForeground(style.text)  -- ✅ switch to white
+    print("Alerts: [TODO]")
+
+    -- Notifications
+    gpu.setForeground(style.highlight)
+    io.write("♥ ")
+    gpu.setForeground(style.text)  -- ✅ switch to white
+    print("Notifications: [TODO]")
+
     gpu.setForeground(style.header)
     print("+-------------------------------------+\n")
 
@@ -106,13 +122,12 @@ local function showMenu(apps)
         print("+--------------------------------------+")
         print("|                                      |")
         print("|   Thank you for using GTNH Control   |")
-        print("|          Have a pastel day! ✨        |")
+        print("|          Have a good day! ✨        |")
         print("|                                      |")
         print("+--------------------------------------+")
         gpu.setForeground(style.highlight)
         local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
         print(sparkle)
-        -- Add signature at exit too, if you like:
         style.printSignature()
         gpu.setForeground(style.text)
         os.exit()
@@ -144,7 +159,6 @@ local function showMenu(apps)
     term.read()
     return true
 end
-
 
 local function main()
     while true do
