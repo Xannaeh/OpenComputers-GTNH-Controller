@@ -1,8 +1,5 @@
--- 🌸 Style.lua — global pastel theme + reusable cuteness
-
 local style = {}
 
--- Main pastel colors
 style.colors = {
     pink = 0xFFC0CB,
     blue = 0xADD8E6,
@@ -24,7 +21,6 @@ style.emojis = {
     "<3"
 }
 
--- Reusable sparkle styles
 style.sparkleStyles = {
     "✦ ✧ ✩ ✪ ✫ ✦ ✧ ✩ ✪ ✫ ✦ ✧ ✩ ✪ ✫ ✦ ✧",
     "★ ☆ ★ ☆ ★ ☆ ★ ☆ ★ ☆ ★ ☆ ★ ☆ ★ ☆",
@@ -33,14 +29,12 @@ style.sparkleStyles = {
     "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~"
 }
 
--- Pastel ASCII cat
 style.cat = [[
  /\_/\
 ( o.o )
  > ^ <
 ]]
 
--- Fortune quotes
 style.fortunes = {
     "You are the sparkle in the code ✨",
     "Pastel dreams build bright machines!",
@@ -50,12 +44,11 @@ style.fortunes = {
     "Stay cozy, craft cutely!"
 }
 
--- ✅✅✅ This must be defined *inside* the table to export!
-function style.printSignature()
+-- ✅ Foolproof function attach
+style.printSignature = function()
     local gpu = require("component").gpu
     gpu.setForeground(style.highlight)
     print(style.cat)
-
     gpu.setForeground(style.text)
     local fortune = style.fortunes[math.random(#style.fortunes)]
     print(fortune)
