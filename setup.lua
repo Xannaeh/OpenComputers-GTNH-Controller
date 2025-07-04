@@ -2,6 +2,7 @@ local fs = require("filesystem")
 
 local component = require("component")
 
+print("🌸 Checking Components...")
 local foundWireless = false
 for addr, _ in component.list("modem") do
     local m = component.proxy(addr)
