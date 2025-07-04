@@ -1,4 +1,5 @@
 return function()
+    print("Creating folders...")
     os.execute("mkdir /apps")
     os.execute("mkdir /apps/launcher")
     os.execute("mkdir /apps/fleet")
@@ -7,6 +8,7 @@ return function()
     os.execute("mkdir /apps/robot_agent")
     os.execute("mkdir /data")
 
+    print("Downloading files...")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/boot.lua /boot.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/launcher/launcher.lua /apps/launcher/launcher.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/fleet.lua /apps/fleet/fleet.lua")
