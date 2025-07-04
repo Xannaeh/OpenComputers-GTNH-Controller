@@ -11,11 +11,11 @@ end
 
 local function main()
     print("\n⚠️  WARNING: RESETTING ALL DATA ⚠️\n")
-    nuke("/data/robots.json")
-    nuke("/data/tasks.json")
-    nuke("/data/machines.json")
-    nuke("/data/recipes.json")
-    nuke("/data/config.json")
+    nuke("/data/robots.lua")
+    nuke("/data/tasks.lua")
+    nuke("/data/machines.lua")
+    nuke("/data/recipes.lua")
+    nuke("/data/config.lua")
 
     print("\n✅ Data nuked! Re-run setup.lua to restore fresh config files.\n")
 end

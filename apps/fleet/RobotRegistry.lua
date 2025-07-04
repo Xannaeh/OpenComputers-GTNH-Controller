@@ -5,7 +5,7 @@ RobotRegistry.__index = RobotRegistry
 
 function RobotRegistry.new()
     local self = setmetatable({}, RobotRegistry)
-    self.path = "/data/robots.json"
+    self.path = "/data/robots.lua"
     self.robots = self:load()
     return self
 end

@@ -41,11 +41,11 @@ local function main()
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/Style.lua /apps/Style.lua")
 
     print("Ensuring data files...")
-    ensureFile("/data/config.json", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/config.json")
-    ensureFile("/data/recipes.json", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/recipes.json")
-    ensureFile("/data/machines.json", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/machines.json")
-    ensureFile("/data/robots.json", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/robots.json")
-    ensureFile("/data/tasks.json", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/tasks.json")
+    ensureFile("/data/config.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/config.lua")
+    ensureFile("/data/recipes.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/recipes.lua")
+    ensureFile("/data/machines.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/machines.lua")
+    ensureFile("/data/robots.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/robots.lua")
+    ensureFile("/data/tasks.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/tasks.lua")
 
     print("\n✅ Setup done! Now run: boot.lua")
 end

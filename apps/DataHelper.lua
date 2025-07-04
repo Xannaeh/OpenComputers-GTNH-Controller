@@ -1,21 +1,20 @@
--- ✅ apps/DataHelper.lua
-local fs = require("filesystem")
+local fs  = require("filesystem")
 local ser = require("serialization")
 
 local DataHelper = {}
 
-function DataHelper.loadJson(path)
+-- Load a Lua table from a .lua file that does `return {...}`
+function DataHelper.loadTable(path)
     if not fs.exists(path) then return nil end
-    local file = io.open(path, "r")
-    local data = ser.unserialize(file:read("*a"))
-    file:close()
-    return data
+    local ok, tbl = pcall(dofile, path)
+    if ok then return tbl else return nil end
 end
 
-function DataHelper.saveJson(path, data)
-    local file = io.open(path, "w")
-    file:write(ser.serialize(data))
-    file:close()
+-- Save a Lua table in OpenComputers serialised format
+function DataHelper.saveTable(path, tbl)
+    local f = io.open(path, "w")
+    f:write("return " .. ser.serialize(tbl))
+    f:close()
 end
 
 return DataHelper
