@@ -13,8 +13,8 @@ function TaskRegistry:load()
     return DataHelper.loadJson(self.path) or { tasks = {} }
 end
 
-function TaskRegistry:save(tasks)
-    DataHelper.saveJson(self.path, tasks)
+function TaskRegistry:save(data)
+    DataHelper.saveJson(self.path, data)
 end
 
 function TaskRegistry:add(task)
@@ -25,15 +25,24 @@ end
 
 function TaskRegistry:list()
     local data = self:load()
-    print("[DEBUG] Loaded tasks.json:")
+
+    print("[DEBUG] Loaded tasks.json root keys:")
     for key, value in pairs(data) do
-        print("[DEBUG] key:", key, ", value type:", type(value))
+        print(string.format("[DEBUG] root key: '%s' type: %s", key, type(value)))
     end
 
-    for _, task in ipairs(data.tasks) do
-        print("[DEBUG] Inspecting task table:")
+    if not data.tasks then
+        print("[DEBUG] tasks field is nil!")
+        return
+    end
+
+    print("[DEBUG] tasks field type: " .. type(data.tasks))
+    print("[DEBUG] tasks count: " .. tostring(#data.tasks))
+
+    for i, task in ipairs(data.tasks) do
+        print(string.format("[DEBUG] Task #%d:", i))
         for k, v in pairs(task) do
-            print("[DEBUG] " .. k .. " = " .. tostring(v))
+            print(string.format("  %s = %s", k, tostring(v)))
         end
 
         if not task.deleted then
