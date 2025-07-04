@@ -3,7 +3,7 @@
 local term = require("term")
 local gpu = require("component").gpu
 local Job = require("apps/fleet/Job")
-local RobotRegistry = require("apps/fleet/Robot")
+local RobotRegistry = require("apps/fleet/RobotRegistry")
 local style = require("apps/Style")
 
 local fleet = {
@@ -44,8 +44,6 @@ function fleet:assignTasks()
     gpu.setForeground(style.text)
 end
 
--- 🌸 Cute Menu (styled)
--- 🌸 Cute Menu (styled like launcher)
 function fleet:menu()
     term.clear()
     gpu.setForeground(style.header)
@@ -54,7 +52,6 @@ function fleet:menu()
     gpu.setForeground(style.header)
     print("+-------------- OPTIONS ---------------+")
 
-    -- Consistent number style like launcher
     gpu.setForeground(style.highlight)
     io.write("1. ")
     gpu.setForeground(style.text)
@@ -77,6 +74,11 @@ function fleet:menu()
 
     gpu.setForeground(style.highlight)
     io.write("5. ")
+    gpu.setForeground(style.text)
+    print("Show Tasks")
+
+    gpu.setForeground(style.highlight)
+    io.write("6. ")
     gpu.setForeground(style.text)
     print("Exit")
 
@@ -121,6 +123,22 @@ function fleet:menu()
 
     elseif choice == "4" then
         self.registry:list()
+        gpu.setForeground(style.highlight)
+        io.write("\nPress Enter to return to the menu...")
+        gpu.setForeground(style.text)
+        io.read()
+
+    elseif choice == "5" then
+        gpu.setForeground(style.header)
+        print("\n+-------------- Tasks -----------------+")
+        gpu.setForeground(style.text)
+        for _, task in ipairs(self.tasks) do
+            print(task.id .. ": " .. task.description .. " [" .. task.jobType .. "]")
+        end
+        gpu.setForeground(style.highlight)
+        io.write("\nPress Enter to return to the menu...")
+        gpu.setForeground(style.text)
+        io.read()
 
     else
         gpu.setForeground(style.header)
@@ -129,9 +147,9 @@ function fleet:menu()
         return
     end
 
-    os.sleep(1)
     self:menu()
 end
+
 
 
 fleet:menu()
