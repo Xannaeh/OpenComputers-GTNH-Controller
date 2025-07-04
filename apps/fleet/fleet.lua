@@ -2,11 +2,13 @@ local term = require("term")
 local gpu = require("component").gpu
 local RobotRegistry = require("apps/fleet/RobotRegistry")
 local TaskRegistry = require("apps/fleet/TaskRegistry")
+local InventoryRegistry = require("apps/fleet/InventoryRegistry")
 local style = require("apps/Style")
 
 local fleet = {
     registry = RobotRegistry.new(),
-    tasks = TaskRegistry.new()
+    tasks = TaskRegistry.new(),
+    inventories = InventoryRegistry.new()
 }
 
 function fleet:addTask(task)
@@ -22,9 +24,8 @@ function fleet:assignTasks()
 
     for _, t in ipairs(tasks) do
         if not t.deleted and not t.assignedRobot then
-            local robot, robotData = self.registry:findBestRobot(t.jobType)
+            local robot, _ = self.registry:findBestRobot(t.jobType)
             if robot then
-                -- Assign task to robot
                 self.registry:assignTask(robot.id, t.id)
                 self.tasks:assign(t.id, robot.id)
                 print("🔗 Assigned " .. t.id .. " ➜ " .. robot.id)
@@ -60,6 +61,18 @@ function fleet:menu()
     gpu.setForeground(style.text) print("Deactivate Robot")
 
     gpu.setForeground(style.highlight) io.write("7. ")
+    gpu.setForeground(style.text) print("Add Inventory")
+
+    gpu.setForeground(style.highlight) io.write("8. ")
+    gpu.setForeground(style.text) print("Modify Inventory")
+
+    gpu.setForeground(style.highlight) io.write("9. ")
+    gpu.setForeground(style.text) print("Delete Inventory")
+
+    gpu.setForeground(style.highlight) io.write("10. ")
+    gpu.setForeground(style.text) print("List Inventories")
+
+    gpu.setForeground(style.highlight) io.write("11. ")
     gpu.setForeground(style.text) print("Exit")
 
     gpu.setForeground(style.header)
@@ -74,19 +87,15 @@ function fleet:menu()
     if choice == "1" then
         gpu.setForeground(style.highlight) io.write("Robot ID: ")
         gpu.setForeground(style.text) local id = io.read()
-
         gpu.setForeground(style.highlight) io.write("Job Type: ")
         gpu.setForeground(style.text) local job = io.read()
-
         self.registry:register(id, job)
 
     elseif choice == "2" then
         gpu.setForeground(style.highlight) io.write("Task Desc: ")
         gpu.setForeground(style.text) local desc = io.read()
-
         gpu.setForeground(style.highlight) io.write("Job Type: ")
         gpu.setForeground(style.text) local job = io.read()
-
         local task = {
             id = "task_" .. math.random(1000),
             description = desc,
@@ -97,7 +106,6 @@ function fleet:menu()
             deleted = false,
             assignedRobot = nil
         }
-
         self:addTask(task)
 
     elseif choice == "3" then
@@ -128,6 +136,44 @@ function fleet:menu()
         gpu.setForeground(style.highlight) io.write("Robot ID to deactivate: ")
         gpu.setForeground(style.text) local id = io.read()
         self.registry:deactivate(id)
+
+    elseif choice == "7" then
+        gpu.setForeground(style.highlight) io.write("Name: ")
+        gpu.setForeground(style.text) local name = io.read()
+        gpu.setForeground(style.highlight) io.write("X: ")
+        gpu.setForeground(style.text) local x = tonumber(io.read())
+        gpu.setForeground(style.highlight) io.write("Y: ")
+        gpu.setForeground(style.text) local y = tonumber(io.read())
+        gpu.setForeground(style.highlight) io.write("Z: ")
+        gpu.setForeground(style.text) local z = tonumber(io.read())
+        gpu.setForeground(style.highlight) io.write("Side: ")
+        gpu.setForeground(style.text) local side = tonumber(io.read())
+        self.inventories:add(name, x, y, z, side)
+
+    elseif choice == "8" then
+        gpu.setForeground(style.highlight) io.write("Name: ")
+        gpu.setForeground(style.text) local name = io.read()
+        gpu.setForeground(style.highlight) io.write("New X: ")
+        gpu.setForeground(style.text) local x = tonumber(io.read())
+        gpu.setForeground(style.highlight) io.write("New Y: ")
+        gpu.setForeground(style.text) local y = tonumber(io.read())
+        gpu.setForeground(style.highlight) io.write("New Z: ")
+        gpu.setForeground(style.text) local z = tonumber(io.read())
+        gpu.setForeground(style.highlight) io.write("New Side: ")
+        gpu.setForeground(style.text) local side = tonumber(io.read())
+        self.inventories:modify(name, x, y, z, side)
+
+    elseif choice == "9" then
+        gpu.setForeground(style.highlight) io.write("Name to delete: ")
+        gpu.setForeground(style.text) local name = io.read()
+        self.inventories:delete(name)
+
+    elseif choice == "10" then
+        self.inventories:list()
+        gpu.setForeground(style.highlight)
+        io.write("\nPress Enter to return to the menu...")
+        gpu.setForeground(style.text)
+        io.read()
 
     else
         gpu.setForeground(style.header)

@@ -60,6 +60,8 @@ local function main()
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/DataHelper.lua /apps/DataHelper.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/Style.lua /apps/Style.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/net/dispatcher.lua /apps/net/dispatcher.lua")
+    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/InventoryRegistry.lua /apps/fleet/InventoryRegistry.lua")
+
 
     print("🌸 Ensuring data files...")
     ensureFile("/data/config.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/config.lua")
@@ -67,6 +69,8 @@ local function main()
     ensureFile("/data/machines.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/machines.lua")
     ensureFile("/data/robots.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/robots.lua")
     ensureFile("/data/tasks.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/tasks.lua")
+    ensureFile("/data/inventories.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/inventories.lua")
+
 
     print("\n✅ Setup done! Now run: boot.lua")
 end
