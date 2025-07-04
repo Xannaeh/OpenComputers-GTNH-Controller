@@ -1,5 +1,20 @@
 local fs = require("filesystem")
 
+local component = require("component")
+
+local foundWireless = false
+for addr, _ in component.list("modem") do
+    local m = component.proxy(addr)
+    if m.isWireless and m.isWireless() then
+        foundWireless = true
+        break
+    end
+end
+
+if not foundWireless then
+    print("⚠️ WARNING: No Wireless Network Card found! Add one to enable task broadcast/receive.")
+end
+
 local function ensureDir(path)
     if not fs.exists(path) then
         os.execute("mkdir " .. path)
@@ -14,6 +29,8 @@ local function ensureFile(path, url)
         print("File exists: " .. path)
     end
 end
+
+
 
 local function main()
     print("🌸 Creating folders...")
