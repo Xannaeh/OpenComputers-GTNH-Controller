@@ -36,10 +36,11 @@ agent.tasks = {}
 
 function agent:checkForUpdates()
     print("🔄 Checking for updates...")
-    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/robot_agent.lua -O /robot_agent.lua")
+    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/robot_agent/robot_agent.lua -O /robot_agent.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/jobs/courier_job.lua -O /apps/fleet/jobs/courier_job.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/Pathfinder.lua -O /apps/fleet/Pathfinder.lua")
 end
+
 
 function agent:runJob(jobType, params)
     local jobPath = "/apps/fleet/jobs/" .. jobType .. "_job.lua"
