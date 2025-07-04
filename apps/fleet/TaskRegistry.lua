@@ -37,7 +37,12 @@ function TaskRegistry:list()
     end
 
     print("[DEBUG] tasks field type: " .. type(data.tasks))
-    print("[DEBUG] tasks count: " .. tostring(#data.tasks))
+    local count = 0
+    for _, task in ipairs(self.tasks.tasks) do
+        count = count + 1
+    end
+    print("[DEBUG] ipairs tasks count:", count)
+
 
     for i, task in ipairs(data.tasks) do
         print(string.format("[DEBUG] Task #%d:", i))
