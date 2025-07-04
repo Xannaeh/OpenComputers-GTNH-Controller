@@ -4,9 +4,8 @@ local term = require("term")
 local gpu = require("component").gpu
 local Job = require("apps/fleet/Job")
 local RobotRegistry = require("apps/fleet/RobotRegistry")
+local TaskRegistry = require("apps/fleet/TaskRegistry")
 local style = require("apps/Style")
-
-local TaskRegistry = require("apps/TaskRegistry")
 
 local fleet = {
     registry = RobotRegistry.new(),
@@ -23,11 +22,14 @@ end
 
 -- 🌸 Assign tasks to idle robots
 function fleet:assignTasks()
-    for _, task in ipairs(self.tasks) do
-        for id, robot in pairs(self.registry.robots) do
-            if robot.status == "idle" and robot.jobType == task.jobType then
+    local tasksList = self.tasks:load().tasks
+    local robotsList = self.registry:load().robots
+
+    for _, task in ipairs(tasksList) do
+        for _, robot in ipairs(robotsList) do
+            if robot.active and robot.status == "idle" and robot.jobType == task.jobType then
                 gpu.setForeground(style.highlight)
-                print("[ASSIGN] Task assigned to: " .. id)
+                print("[ASSIGN] Task assigned to: " .. robot.id)
                 robot.status = "busy"
                 task.assigned = true
                 self.registry:save()
@@ -36,14 +38,15 @@ function fleet:assignTasks()
         end
     end
 
-    -- Remove assigned tasks
+    -- Save only unassigned tasks
     local remaining = {}
-    for _, t in ipairs(self.tasks) do
+    for _, t in ipairs(tasksList) do
         if not t.assigned then
             table.insert(remaining, t)
         end
     end
-    self.tasks = remaining
+    self.tasks.tasks.tasks = remaining
+    self.tasks:save()
     gpu.setForeground(style.text)
 end
 
@@ -55,35 +58,23 @@ function fleet:menu()
     gpu.setForeground(style.header)
     print("+-------------- OPTIONS ---------------+")
 
-    gpu.setForeground(style.highlight)
-    io.write("1. ")
-    gpu.setForeground(style.text)
-    print("Register Robot")
+    gpu.setForeground(style.highlight) io.write("1. ")
+    gpu.setForeground(style.text) print("Register Robot")
 
-    gpu.setForeground(style.highlight)
-    io.write("2. ")
-    gpu.setForeground(style.text)
-    print("Add Task")
+    gpu.setForeground(style.highlight) io.write("2. ")
+    gpu.setForeground(style.text) print("Add Task")
 
-    gpu.setForeground(style.highlight)
-    io.write("3. ")
-    gpu.setForeground(style.text)
-    print("Assign Tasks")
+    gpu.setForeground(style.highlight) io.write("3. ")
+    gpu.setForeground(style.text) print("Assign Tasks")
 
-    gpu.setForeground(style.highlight)
-    io.write("4. ")
-    gpu.setForeground(style.text)
-    print("Show Robots")
+    gpu.setForeground(style.highlight) io.write("4. ")
+    gpu.setForeground(style.text) print("Show Robots")
 
-    gpu.setForeground(style.highlight)
-    io.write("5. ")
-    gpu.setForeground(style.text)
-    print("Show Tasks")
+    gpu.setForeground(style.highlight) io.write("5. ")
+    gpu.setForeground(style.text) print("Show Tasks")
 
-    gpu.setForeground(style.highlight)
-    io.write("6. ")
-    gpu.setForeground(style.text)
-    print("Exit")
+    gpu.setForeground(style.highlight) io.write("6. ")
+    gpu.setForeground(style.text) print("Exit")
 
     gpu.setForeground(style.header)
     print("+--------------------------------------+")
@@ -95,28 +86,20 @@ function fleet:menu()
     local choice = io.read()
 
     if choice == "1" then
-        gpu.setForeground(style.highlight)
-        io.write("Robot ID: ")
-        gpu.setForeground(style.text)
-        local id = io.read()
+        gpu.setForeground(style.highlight) io.write("Robot ID: ")
+        gpu.setForeground(style.text) local id = io.read()
 
-        gpu.setForeground(style.highlight)
-        io.write("Job Type: ")
-        gpu.setForeground(style.text)
-        local job = io.read()
+        gpu.setForeground(style.highlight) io.write("Job Type: ")
+        gpu.setForeground(style.text) local job = io.read()
 
         self.registry:register(id, job)
 
     elseif choice == "2" then
-        gpu.setForeground(style.highlight)
-        io.write("Task Desc: ")
-        gpu.setForeground(style.text)
-        local desc = io.read()
+        gpu.setForeground(style.highlight) io.write("Task Desc: ")
+        gpu.setForeground(style.text) local desc = io.read()
 
-        gpu.setForeground(style.highlight)
-        io.write("Job Type: ")
-        gpu.setForeground(style.text)
-        local job = io.read()
+        gpu.setForeground(style.highlight) io.write("Job Type: ")
+        gpu.setForeground(style.text) local job = io.read()
 
         local t = Job.new("task_" .. math.random(1000), desc, job)
         self:addTask(t)
@@ -135,9 +118,7 @@ function fleet:menu()
         gpu.setForeground(style.header)
         print("\n+-------------- Tasks -----------------+")
         gpu.setForeground(style.text)
-        for _, task in ipairs(self.tasks) do
-            print(task.id .. ": " .. task.description .. " [" .. task.jobType .. "]")
-        end
+        self:showTasks()
         gpu.setForeground(style.highlight)
         io.write("\nPress Enter to return to the menu...")
         gpu.setForeground(style.text)
@@ -152,7 +133,5 @@ function fleet:menu()
 
     self:menu()
 end
-
-
 
 fleet:menu()
