@@ -6,16 +6,19 @@ local Job = require("apps/fleet/Job")
 local RobotRegistry = require("apps/fleet/RobotRegistry")
 local style = require("apps/Style")
 
+local TaskRegistry = require("apps/TaskRegistry")
+
 local fleet = {
     registry = RobotRegistry.new(),
-    tasks = {}
+    tasks = TaskRegistry.new()
 }
 
--- 🌸 Add task
 function fleet:addTask(task)
-    gpu.setForeground(style.highlight)
-    print("[TASK] Added: " .. task.description)
-    gpu.setForeground(style.text)
+    self.tasks:add(task)
+end
+
+function fleet:showTasks()
+    self.tasks:list()
 end
 
 -- 🌸 Assign tasks to idle robots

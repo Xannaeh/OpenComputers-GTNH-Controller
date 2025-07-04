@@ -39,11 +39,13 @@ function RobotRegistry:dismantle(id)
 end
 
 function RobotRegistry:list()
+    self.robots = self:load() -- ✅ refresh first
     for _, robot in ipairs(self.robots.robots) do
         if robot.active then
-            print(robot.id .. " (" .. robot.jobType .. ") — " .. robot.status)
+            print("🤖 " .. robot.id .. " [" .. robot.jobType .. "] - " .. robot.status)
         end
     end
 end
+
 
 return RobotRegistry
