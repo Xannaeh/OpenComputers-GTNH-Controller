@@ -22,4 +22,4 @@ local function main()
     print("Done! Now run: boot.lua")
 end
 
-return main
+main()
