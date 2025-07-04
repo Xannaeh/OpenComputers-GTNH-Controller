@@ -1,0 +1,31 @@
+{
+  "tasks": [
+    {
+      "id": "task_001",
+      "description": "Deliver item from A to B",
+      "jobType": "courier",
+      "priority": 1,
+      "parent": null,
+      "subtasks": [],
+      "deleted": false
+    },
+    {
+      "id": "task_002",
+      "description": "Craft advanced circuit",
+      "jobType": "crafter",
+      "priority": 2,
+      "parent": null,
+      "subtasks": ["task_003", "task_004"],
+      "deleted": false
+    },
+    {
+      "id": "task_003",
+      "description": "Fetch copper wire",
+      "jobType": "courier",
+      "priority": 1,
+      "parent": "task_002",
+      "subtasks": [],
+      "deleted": false
+    }
+  ]
+}
