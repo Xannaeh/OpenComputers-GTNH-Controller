@@ -10,12 +10,13 @@ function TaskRegistry.new()
 end
 
 function TaskRegistry:load()
-    return DataHelper.loadJson(self.path) or {tasks = {}}
+    local loaded = DataHelper.loadJson(self.path)
+    return loaded or { tasks = {} }
 end
 
 function TaskRegistry:list()
-    local data = self:load()
-    for _, task in ipairs(data.tasks) do
+    local fresh = self:load()
+    for _, task in ipairs(fresh.tasks) do
         if not task.deleted then
             print("📝 " .. task.id .. " — " .. task.description .. " [" .. task.jobType .. "]")
         end
@@ -23,9 +24,9 @@ function TaskRegistry:list()
 end
 
 function TaskRegistry:add(task)
-    local data = self:load()
-    table.insert(data.tasks, task)
-    DataHelper.saveJson(self.path, data)
+    local fresh = self:load()
+    table.insert(fresh.tasks, task)
+    DataHelper.saveJson(self.path, fresh)
 end
 
 return TaskRegistry
