@@ -17,8 +17,9 @@ function fleet:addTask(task)
 end
 
 function fleet:showTasks()
-    self.tasks:list() -- this now does a real fresh file read
+    self.tasks:list()
 end
+
 
 function fleet:menu()
     term.clear()
