@@ -1,12 +1,10 @@
 local fs = require("filesystem")
 local term = require("term")
+local gpu = require("component").gpu
+
+local style = require("apps/Style")
 
 local APPS_DIR = "/apps/"
-
--- 🎀 Pastel theme
-local pink = "\27[35m"
-local blue = "\27[36m"
-local white = "\27[37m"
 
 local function listApps()
     local apps = {}
@@ -27,24 +25,39 @@ local function showMenu(apps)
     term.clear()
     term.setCursor(1, 1)
 
-    print(pink .. "=== ✨ MAIN MENU ✨ ===\n" .. white)
+    gpu.setForeground(style.header)
+    print("=== ✨ MAIN MENU ✨ ===\n")
 
-    print(pink .. "=== STATUS ===" .. white)
-    print(blue .. "♥ " .. white .. "Power: [TODO]")
-    print(blue .. "♥ " .. white .. "Alerts: [TODO]")
-    print(blue .. "♥ " .. white .. "Notifications: [TODO]\n")
+    gpu.setForeground(style.header)
+    print("=== STATUS ===")
+    gpu.setForeground(style.highlight)
+    print("♥ ", style.text, "Power: [TODO]")
+    print("♥ ", style.text, "Alerts: [TODO]")
+    print("♥ ", style.text, "Notifications: [TODO]\n")
 
-    print(pink .. "=== Programs ===" .. white)
+    gpu.setForeground(style.header)
+    print("=== Programs ===")
     for i, app in ipairs(apps) do
-        print(blue .. i .. ". " .. white .. app)
+        gpu.setForeground(style.highlight)
+        io.write(i .. ". ")
+        gpu.setForeground(style.text)
+        print(app)
     end
-    print(blue .. (#apps + 1) .. ". " .. white .. "Exit")
+    gpu.setForeground(style.highlight)
+    io.write((#apps + 1) .. ". ")
+    gpu.setForeground(style.text)
+    print("Exit")
 
-    print("\n" .. blue .. "Select program number:" .. white)
+    print()
+    gpu.setForeground(style.highlight)
+    io.write("Select program number: ")
+    gpu.setForeground(style.text)
     local choice = tonumber(term.read())
 
     if choice == #apps + 1 then
-        print("\n" .. pink .. "Goodbye! Have a lovely day! (｡♥‿♥｡)" .. white)
+        gpu.setForeground(style.header)
+        print("\nGoodbye! Have a lovely day!")
+        gpu.setForeground(style.text)
         os.exit()
     elseif choice and apps[choice] then
         local appPath = APPS_DIR .. apps[choice] .. "/" .. apps[choice] .. ".lua"
@@ -52,16 +65,25 @@ local function showMenu(apps)
         if app then
             term.clear()
             term.setCursor(1, 1)
-            print(pink .. "=== Running " .. apps[choice] .. " ===" .. white)
+            gpu.setForeground(style.header)
+            print("=== Running " .. apps[choice] .. " ===")
+            gpu.setForeground(style.text)
             app()
         else
-            print(blue .. "Error: Failed to load " .. appPath .. white)
+            gpu.setForeground(style.highlight)
+            print("Error: Failed to load " .. appPath)
+            gpu.setForeground(style.text)
         end
     else
-        print(blue .. "Invalid choice. Try again." .. white)
+        gpu.setForeground(style.highlight)
+        print("Invalid choice. Try again.")
+        gpu.setForeground(style.text)
     end
 
-    print("\n" .. blue .. "Press Enter to return to the Main Menu..." .. white)
+    print()
+    gpu.setForeground(style.highlight)
+    io.write("Press Enter to return to the Main Menu...")
+    gpu.setForeground(style.text)
     term.read()
     return true
 end
