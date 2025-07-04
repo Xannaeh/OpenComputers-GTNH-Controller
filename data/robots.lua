@@ -6,7 +6,7 @@ return {
       jobType = "courier",
       status = "idle",
       active = true,
-      tasks = {},
+      tasks = {"task_001"},
       x = 0,
       y = 64,
       z = 0

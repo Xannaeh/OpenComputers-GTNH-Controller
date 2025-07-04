@@ -11,10 +11,8 @@ local fleet = {
     inventories = InventoryRegistry.new()
 }
 
-function fleet:addTask(task)
-    self.tasks:add(task)
-    -- Auto-assign immediately
-    self:assignTasks()
+function fleet:showTasks()
+    self.tasks:list()
 end
 
 
