@@ -1,5 +1,4 @@
 local fs = require("filesystem")
-
 local component = require("component")
 
 print("🌸 Checking Components...")
@@ -33,8 +32,6 @@ local function ensureFile(path, url)
     end
 end
 
-
-
 local function main()
     print("🌸 Creating folders...")
     ensureDir("/apps")
@@ -53,6 +50,8 @@ local function main()
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/Job.lua /apps/fleet/Job.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/RobotRegistry.lua /apps/fleet/RobotRegistry.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/TaskRegistry.lua /apps/fleet/TaskRegistry.lua")
+    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/InventoryRegistry.lua /apps/fleet/InventoryRegistry.lua")
+    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/Pathfinder.lua /apps/fleet/Pathfinder.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/robot_agent/robot_agent.lua /apps/fleet/robot_agent/robot_agent.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/jobs/courier_job.lua /apps/fleet/jobs/courier_job.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/power/power.lua /apps/power/power.lua")
@@ -60,17 +59,14 @@ local function main()
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/DataHelper.lua /apps/DataHelper.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/Style.lua /apps/Style.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/net/dispatcher.lua /apps/net/dispatcher.lua")
-    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/InventoryRegistry.lua /apps/fleet/InventoryRegistry.lua")
-
 
     print("🌸 Ensuring data files...")
     ensureFile("/data/config.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/config.lua")
     ensureFile("/data/recipes.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/recipes.lua")
     ensureFile("/data/machines.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/machines.lua")
+    ensureFile("/data/inventories.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/inventories.lua")
     ensureFile("/data/robots.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/robots.lua")
     ensureFile("/data/tasks.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/tasks.lua")
-    ensureFile("/data/inventories.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/inventories.lua")
-
 
     print("\n✅ Setup done! Now run: boot.lua")
 end
