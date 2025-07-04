@@ -59,7 +59,7 @@ function RobotRegistry:findBestRobot(jobType)
     local d = self:load()
     local best = nil
     for _, robot in ipairs(d.robots) do
-        if robot.active and robot.jobType == jobType then
+        if robot.active and robot.status == "idle" and robot.jobType == jobType then
             if not best or #robot.tasks < #best.tasks then
                 best = robot
             end
@@ -68,10 +68,14 @@ function RobotRegistry:findBestRobot(jobType)
     return best
 end
 
+
 function RobotRegistry:assignTask(robotId, taskId)
     local d = self:load()
     for _, robot in ipairs(d.robots) do
         if robot.id == robotId then
+            if not robot.tasks then
+                robot.tasks = {}
+            end
             table.insert(robot.tasks, taskId)
             robot.status = "busy"
             break
@@ -79,6 +83,7 @@ function RobotRegistry:assignTask(robotId, taskId)
     end
     self:save(d)
 end
+
 
 function RobotRegistry:updatePosition(robotId, x, y, z)
     local d = self:load()
