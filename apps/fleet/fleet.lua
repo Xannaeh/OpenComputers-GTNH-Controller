@@ -1,4 +1,4 @@
--- 🌸 fleet.lua — Fleet App Main Menu, Task Manager, Glue Code
+-- 🌸 fleet.lua — Fleet Manager: Robots & Tasks Glue
 
 local term = require("term")
 local gpu = require("component").gpu
@@ -12,33 +12,37 @@ local fleet = {
     tasks = TaskRegistry.new()
 }
 
+-- Add a task
 function fleet:addTask(task)
     self.tasks:add(task)
 end
 
+-- Show tasks nicely
 function fleet:showTasks()
     self.tasks:list()
 end
 
--- 🌸 Assign tasks to idle robots
+-- Assign tasks to idle robots
 function fleet:assignTasks()
     local tasksList = self.tasks:load().tasks
-    local robotsList = self.registry:load().robots
+    local robotsData = self.registry:load().robots
 
     for _, task in ipairs(tasksList) do
-        for _, robot in ipairs(robotsList) do
-            if robot.active and robot.status == "idle" and robot.jobType == task.jobType then
-                gpu.setForeground(style.highlight)
-                print("[ASSIGN] Task assigned to: " .. robot.id)
-                robot.status = "busy"
-                task.assigned = true
-                self.registry:save()
-                break
+        if not task.deleted then
+            for _, robot in ipairs(robotsData) do
+                if robot.active and robot.status == "idle" and robot.jobType == task.jobType then
+                    gpu.setForeground(style.highlight)
+                    print("[ASSIGN] Task assigned to: " .. robot.id)
+                    robot.status = "busy"
+                    task.assigned = true
+                    self.registry:save()
+                    break
+                end
             end
         end
     end
 
-    -- Save only unassigned tasks
+    -- Remove completed tasks but keep history
     local remaining = {}
     for _, t in ipairs(tasksList) do
         if not t.assigned then
@@ -47,15 +51,15 @@ function fleet:assignTasks()
     end
     self.tasks.tasks.tasks = remaining
     self.tasks:save()
+
     gpu.setForeground(style.text)
 end
 
+-- Cute ASCII CLI menu
 function fleet:menu()
     term.clear()
     gpu.setForeground(style.header)
     print("\n+------------ Fleet Manager -----------+")
-
-    gpu.setForeground(style.header)
     print("+-------------- OPTIONS ---------------+")
 
     gpu.setForeground(style.highlight) io.write("1. ")

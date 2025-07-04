@@ -1,3 +1,5 @@
+-- 🌸 TaskRegistry.lua — Persistent Task Storage
+
 local DataHelper = require("apps/DataHelper")
 
 local TaskRegistry = {}
@@ -20,13 +22,15 @@ function TaskRegistry:save()
 end
 
 function TaskRegistry:add(task)
-    table.insert(self.tasks.tasks, task)
+    -- Always reload to prevent stale data
+    local data = self:load()
+    table.insert(data.tasks, task)
     self:save()
 end
 
 function TaskRegistry:list()
-    local tasksData = self:load()
-    for _, task in ipairs(tasksData.tasks) do
+    local data = self:load()
+    for _, task in ipairs(data.tasks) do
         if not task.deleted then
             print("📝 " .. task.id .. " — " .. task.description .. " [" .. task.jobType .. "]")
         end
