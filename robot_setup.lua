@@ -27,6 +27,7 @@ print("📂 Ensuring folders...")
 ensureDir("/apps")
 ensureDir("/apps/fleet")
 ensureDir("/apps/fleet/jobs")
+ensureDir("/apps/fleet/robot_agent")
 ensureDir("/data")  -- ✅ Ensure /data before downloading!
 
 print("📥 Downloading robot files...")
