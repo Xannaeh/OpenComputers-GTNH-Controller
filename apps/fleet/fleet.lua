@@ -13,18 +13,24 @@ local fleet = {
 
 function fleet:addTask(task)
     self.tasks:add(task)
+    -- Auto-assign immediately
+    self:assignTasks()
 end
 
-function fleet:showTasks()
-    self.tasks:list()
+
+function fleet:addTask(task)
+    self.tasks:add(task)
+    -- Immediately try to assign it
+    self:assignTasks()
 end
 
 function fleet:assignTasks()
     local tasks = self.tasks:load().tasks
+    table.sort(tasks, function(a, b) return a.priority < b.priority end)
 
     for _, t in ipairs(tasks) do
         if not t.deleted and not t.assignedRobot then
-            local robot, _ = self.registry:findBestRobot(t.jobType)
+            local robot = self.registry:findBestRobot(t.jobType)
             if robot then
                 self.registry:assignTask(robot.id, t.id)
                 self.tasks:assign(t.id, robot.id)
@@ -35,6 +41,7 @@ function fleet:assignTasks()
         end
     end
 end
+
 
 function fleet:menu()
     term.clear()

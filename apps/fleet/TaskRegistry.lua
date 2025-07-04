@@ -25,11 +25,13 @@ function TaskRegistry:list()
     local d = self:load()
     for _, t in ipairs(d.tasks) do
         if not t.deleted then
-            local assigned = t.assignedRobot or "none"
-            print(("📝 %s — %s [%s] ➜ %s"):format(t.id, t.description, t.jobType, assigned))
+            local assigned = t.assignedRobot or "-"
+            print(("📝 %s – %s [%s] ➜ %s"):format(
+                    t.id, t.description, t.jobType, assigned))
         end
     end
 end
+
 
 function TaskRegistry:assign(taskId, robotId)
     local d = self:load()
@@ -41,5 +43,6 @@ function TaskRegistry:assign(taskId, robotId)
     end
     self:save(d)
 end
+
 
 return TaskRegistry
