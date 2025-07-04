@@ -27,13 +27,14 @@ function RobotRegistry:register(id, jobType)
         jobType = jobType,
         status = "idle",
         active = true,
-        tasks = {},
+        tasks = {}, -- 🫧 always initialize
         x = 0,
         y = 64,
         z = 0
     })
     self:save(d)
 end
+
 
 function RobotRegistry:deactivate(id)
     local d = self:load()
@@ -96,11 +97,15 @@ function RobotRegistry:list()
     local d = self:load()
     for _, r in ipairs(d.robots) do
         if r.active then
+            local tasks = r.tasks or {}
+            local x = tonumber(r.x) or 0
+            local y = tonumber(r.y) or 0
+            local z = tonumber(r.z) or 0
             print(("🤖 %s [%s] – %s – Tasks: %d – Pos: (%d,%d,%d)"):format(
-                    r.id, r.jobType, r.status, #r.tasks,
-                    r.x or 0, r.y or 0, r.z or 0))
+                    r.id, r.jobType, r.status, #tasks, x, y, z))
         end
     end
 end
+
 
 return RobotRegistry
