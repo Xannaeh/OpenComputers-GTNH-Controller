@@ -6,16 +6,6 @@ local style = require("apps/Style")
 
 local APPS_DIR = "/apps/"
 
-local function sparkleLine()
-    local sparkles = {"*", "+", "✦", "✧", "✩"}
-    for i = 1, 40 do
-        gpu.setForeground(style.highlight)
-        io.write(sparkles[math.random(1, #sparkles)])
-        os.sleep(0.01)
-    end
-    print()
-end
-
 local function splash()
     gpu.setForeground(style.header)
     print(" __      __       .__                              ")
@@ -25,14 +15,24 @@ local function splash()
     print("  \\__/\\  /  \\___  >____/\\___  >____/|__|_|  /\\___  >")
     print("       \\/       \\/          \\/            \\/     \\/ ")
     print()
+
+    -- Get random emoji from style
+    local emoji = style.emojis[math.random(#style.emojis)]
+
+    -- Welcome box
     print("+--------------------------------------+")
     print("|                                      |")
-    print("|   WELCOME TO THE GTNH CONTROLLER ✨  |")
+    print("|   WELCOME TO THE GTNH CONTROLLER " .. emoji .. "  |")
     print("|                                      |")
     print("+--------------------------------------+")
+
+    -- Random sparkle bar from style
+    gpu.setForeground(style.highlight)
+    local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
+    print(sparkle)
+
     gpu.setForeground(style.text)
-    sparkleLine()
-    os.sleep(0.3)
+    os.sleep(0.2)
 end
 
 local function progressBar(message, total)
@@ -107,7 +107,11 @@ local function showMenu(apps)
         print("|                                      |")
         print("+--------------------------------------+")
         gpu.setForeground(style.text)
-        sparkleLine()
+        -- New random sparkle bar for exit too!
+        local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
+        gpu.setForeground(style.highlight)
+        print(sparkle)
+        gpu.setForeground(style.text)
         os.exit()
     elseif choice and apps[choice] then
         local appPath = APPS_DIR .. apps[choice] .. "/" .. apps[choice] .. ".lua"
