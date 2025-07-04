@@ -1,4 +1,4 @@
-return function()
+local function main()
     print("Creating folders...")
     os.execute("mkdir /apps")
     os.execute("mkdir /apps/launcher")
@@ -23,3 +23,5 @@ return function()
 
     print("Done! Now run: boot.lua")
 end
+
+main()
