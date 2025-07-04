@@ -1,4 +1,4 @@
-local function main()
+return function()
     os.execute("mkdir /apps")
     os.execute("mkdir /apps/launcher")
     os.execute("mkdir /apps/fleet")
@@ -21,5 +21,3 @@ local function main()
 
     print("Done! Now run: boot.lua")
 end
-
-main()
