@@ -9,45 +9,31 @@ function TaskRegistry.new()
     return self
 end
 
+-- fresh read every call
 function TaskRegistry:load()
-    print("[DEBUG] Loading JSON from:", self.path)
-    local data = DataHelper.loadJson(self.path) or { tasks = {} }
-    print("[DEBUG] Loaded root keys:")
-    for k, v in pairs(data) do
-        print(string.format("[DEBUG]   %s : %s", tostring(k), type(v)))
-    end
-    print("[DEBUG] tasks field type:", type(data.tasks))
-    print("[DEBUG] tasks count:", #data.tasks)
-    return data
-end
-
-function TaskRegistry:save(data)
-    print("[DEBUG] Saving JSON to:", self.path)
-    DataHelper.saveJson(self.path, data)
-end
-
-function TaskRegistry:add(task)
-    print("[DEBUG] Adding new task:", task.id)
-    local data = self:load()
-    table.insert(data.tasks, task)
-    self:save(data)
-    print("[DEBUG] Task saved.")
+    return DataHelper.loadJson(self.path) or {tasks = {}}
 end
 
 function TaskRegistry:list()
     local data = self:load()
-    print("[DEBUG] Listing tasks:")
-    for i, task in ipairs(data.tasks) do
-        print(string.format("[DEBUG] Task #%d", i))
-        for k, v in pairs(task) do
-            print(string.format("[DEBUG]   %s = %s", tostring(k), tostring(v)))
-        end
-        if not task.deleted then
+
+    print("[DEBUG] tasks table raw keys:")
+    for k, v in pairs(data.tasks) do
+        print(string.format("  key=%s (%s)", tostring(k), type(k)))
+    end
+
+    local shown = 0
+    for _, task in pairs(data.tasks) do      -- ←  pairs not ipairs
+        if type(task) == "table" and not task.deleted then
+            shown = shown + 1
             print("📝 " .. task.id .. " — " .. task.description .. " [" .. task.jobType .. "]")
-        else
-            print("[DEBUG] (skipped: marked deleted)")
         end
+    end
+
+    if shown == 0 then
+        print("(no active tasks)")
     end
 end
 
+-- leave add/ save exactly as before, if you still need them
 return TaskRegistry
