@@ -1,5 +1,3 @@
--- 🌸 TaskRegistry.lua — Minimal: Just load and list
-
 local DataHelper = require("apps/DataHelper")
 
 local TaskRegistry = {}
@@ -12,18 +10,22 @@ function TaskRegistry.new()
 end
 
 function TaskRegistry:load()
-    -- Always fresh read
-    local tasksFile = DataHelper.loadJson(self.path)
-    return tasksFile or {tasks = {}}
+    return DataHelper.loadJson(self.path) or {tasks = {}}
 end
 
 function TaskRegistry:list()
-    local tasksData = self:load()
-    for _, task in ipairs(tasksData.tasks) do
+    local data = self:load()
+    for _, task in ipairs(data.tasks) do
         if not task.deleted then
             print("📝 " .. task.id .. " — " .. task.description .. " [" .. task.jobType .. "]")
         end
     end
+end
+
+function TaskRegistry:add(task)
+    local data = self:load()
+    table.insert(data.tasks, task)
+    DataHelper.saveJson(self.path, data)
 end
 
 return TaskRegistry

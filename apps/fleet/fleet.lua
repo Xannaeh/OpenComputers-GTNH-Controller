@@ -1,4 +1,4 @@
--- 🌸 fleet.lua — Show tasks only
+-- 🌸 fleet.lua — Fleet App glue, real tasks show
 
 local term = require("term")
 local gpu = require("component").gpu
@@ -11,8 +11,13 @@ local fleet = {
     tasks = TaskRegistry.new()
 }
 
+-- Add task keeps working for future, uses DataHelper JSON
+function fleet:addTask(task)
+    self.tasks:add(task)
+end
+
 function fleet:showTasks()
-    self.tasks:list()
+    self.tasks:list() -- this now does a real fresh file read
 end
 
 function fleet:menu()
@@ -64,19 +69,27 @@ function fleet:menu()
         gpu.setForeground(style.highlight) io.write("Job Type: ")
         gpu.setForeground(style.text) local job = io.read()
 
-        local t = Job.new("task_" .. math.random(1000), desc, job)
-        self:addTask(t)
+        local task = {
+            id = "task_" .. math.random(1000),
+            description = desc,
+            jobType = job,
+            priority = 1,
+            parent = nil,
+            subtasks = {},
+            deleted = false
+        }
+
+        self:addTask(task)
 
     elseif choice == "3" then
-        self:assignTasks()
-
+        -- Placeholder, no real assign yet
+        print("Task assigning not yet implemented.")
     elseif choice == "4" then
         self.registry:list()
         gpu.setForeground(style.highlight)
         io.write("\nPress Enter to return to the menu...")
         gpu.setForeground(style.text)
         io.read()
-
     elseif choice == "5" then
         gpu.setForeground(style.header)
         print("\n+-------------- Tasks -----------------+")
