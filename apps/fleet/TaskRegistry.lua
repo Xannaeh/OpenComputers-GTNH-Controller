@@ -6,7 +6,6 @@ TaskRegistry.__index = TaskRegistry
 function TaskRegistry.new()
     local self = setmetatable({}, TaskRegistry)
     self.path = "/data/tasks.json"
-    self.tasks = self:load() -- keep the whole {"tasks": []} table
     return self
 end
 
@@ -14,22 +13,24 @@ function TaskRegistry:load()
     return DataHelper.loadJson(self.path) or { tasks = {} }
 end
 
-function TaskRegistry:save()
-    DataHelper.saveJson(self.path, self.tasks)
+function TaskRegistry:save(tasks)
+    DataHelper.saveJson(self.path, tasks)
 end
 
 function TaskRegistry:add(task)
-    table.insert(self.tasks.tasks, task)
-    self:save()
+    local data = self:load()
+    table.insert(data.tasks, task)
+    self:save(data)
 end
 
 function TaskRegistry:list()
+    local data = self:load()
     print("[DEBUG] Loaded tasks.json:")
-    for key, value in pairs(self.tasks) do
+    for key, value in pairs(data) do
         print("[DEBUG] key:", key, ", value type:", type(value))
     end
 
-    for _, task in ipairs(self.tasks.tasks) do
+    for _, task in ipairs(data.tasks) do
         print("[DEBUG] Inspecting task table:")
         for k, v in pairs(task) do
             print("[DEBUG] " .. k .. " = " .. tostring(v))
