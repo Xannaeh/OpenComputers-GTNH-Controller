@@ -38,7 +38,7 @@ local function showMenu(apps)
     for i, app in ipairs(apps) do
         print(blue .. i .. ". " .. white .. app)
     end
-    print(blue .. (#apps + 1) .. ". Exit" .. white)
+    print(blue .. (#apps + 1) .. ". " .. white .. "Exit")
 
     print("\n" .. blue .. "Select program number:" .. white)
     local choice = tonumber(term.read())
