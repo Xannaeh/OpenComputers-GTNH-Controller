@@ -6,28 +6,62 @@ local style = require("apps/Style")
 
 local APPS_DIR = "/apps/"
 
-local function splash()
-    gpu.setForeground(style.header)
-    print([[
- __      __       .__
-/  \    /  \ ____ |  |   ____  ____   _____   ____
-\   \/\/   // __ \|  | _/ ___\/  _ \ /     \_/ __ \
- \        /\  ___/|  |_\  \__(  <_> )  Y Y  \  ___/
-  \__/\  /  \___  >____/\___  >____/|__|_|  /\___  >
-       \/       \/          \/            \/     \/
-    ]])
-    gpu.setForeground(style.text)
-    print("Welcome to the GTNH BaseController ✨\n")
-    os.sleep(0.5) -- pause for effect
+-- 🌸 Get screen width for centering
+local function getScreenWidth()
+    local w, _ = gpu.getResolution()
+    return w
 end
 
-local function animateDots(text, count)
-    io.write(text)
-    for i = 1, count do
-        io.write(".")
-        os.sleep(0.2)
+-- 🌸 Center a line
+local function center(text)
+    local w = getScreenWidth()
+    local x = math.floor((w - #text) / 2)
+    gpu.set((x > 0 and x or 1), select(2, term.getCursor()), text)
+end
+
+-- 🌈 Animated rainbow splash line
+local function rainbowSplashLine(text)
+    local colors = {
+        0xFF0000, -- red
+        0xFF7F00, -- orange
+        0xFFFF00, -- yellow
+        0x00FF00, -- green
+        0x0000FF, -- blue
+        0x4B0082, -- indigo
+        0x8B00FF  -- violet
+    }
+
+    for i = 1, #text do
+        local c = colors[(i % #colors) + 1]
+        gpu.setForeground(c)
+        io.write(text:sub(i,i))
+        os.sleep(0.05)
     end
     print()
+end
+
+local function splash()
+    gpu.setForeground(style.header)
+    center(" __      __       .__                              ")
+    center("/  \\    /  \\ ____ |  |   ____  ____   _____   ____ ")
+    center("\\   \\/\\/   // __ \\|  | _/ ___\\/  _ \\ /     \\_/ __ \\")
+    center(" \\        /\\  ___/|  |_\\  \\__(  <_> )  Y Y  \\  ___/")
+    center("  \\__/\\  /  \\___  >____/\\___  >____/|__|_|  /\\___  >")
+    center("       \\/       \\/          \\/            \\/     \\/ ")
+    print()
+    rainbowSplashLine("✨ Welcome to the GTNH BaseController ✨")
+    gpu.setForeground(style.text)
+    os.sleep(0.5)
+end
+
+-- 🌸 Cute dot loader with progress bar
+local function progressBar(message, total)
+    io.write(message .. " [")
+    for i = 1, total do
+        io.write("=")
+        os.sleep(0.1)
+    end
+    print("]")
 end
 
 local function listApps()
@@ -52,11 +86,11 @@ local function showMenu(apps)
     splash()
 
     gpu.setForeground(style.header)
-    print("=== STATUS ===")
+    print("\n=== STATUS ===")
     gpu.setForeground(style.highlight)
-    print("♥ ", style.text, "Power: [TODO]")
-    print("♥ ", style.text, "Alerts: [TODO]")
-    print("♥ ", style.text, "Notifications: [TODO]\n")
+    print("Power: [TODO]")
+    print("Alerts: [TODO]")
+    print("Notifications: [TODO]\n")
 
     gpu.setForeground(style.header)
     print("=== Programs ===")
@@ -77,11 +111,11 @@ local function showMenu(apps)
     gpu.setForeground(style.text)
     local choice = tonumber(term.read())
 
-    animateDots("Launching", 3)
+    progressBar("Launching", 10)
 
     if choice == #apps + 1 then
         gpu.setForeground(style.header)
-        print("\nGoodbye! Have a lovely day!")
+        print("\nGoodbye! Have a pastel day! 🌸")
         gpu.setForeground(style.text)
         os.exit()
     elseif choice and apps[choice] then
