@@ -8,25 +8,12 @@ return {
       priority    = 1,
       parent      = false,      -- nil/false is fine
       subtasks    = {},
-      deleted     = false
-    },
-    {
-      id          = "task_002",
-      description = "Craft advanced circuit",
-      jobType     = "crafter",
-      priority    = 2,
-      parent      = false,
-      subtasks    = { "task_003", "task_004" },
-      deleted     = false
-    },
-    {
-      id          = "task_003",
-      description = "Fetch copper wire",
-      jobType     = "courier",
-      priority    = 1,
-      parent      = "task_002",
-      subtasks    = {},
-      deleted     = false
+      deleted     = false,
+      params = {
+        fromName = "BaseInputChest",
+        toName = "BaseOutputChest",
+        count = 1
+      }
     }
   }
 }
