@@ -27,16 +27,13 @@ local function splash()
     local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
     gpu.setForeground(style.highlight)
     print(sparkle)
-
     -- 💖 Run the helper — no more nil!
     style.printSignature()
-
+    gpu.setForeground(style.text)
     -- Random sparkle line
     local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
     gpu.setForeground(style.highlight)
     print(sparkle)
-
-    gpu.setForeground(style.text)
 end
 
 local function progressBar(message, total)
@@ -130,6 +127,9 @@ local function showMenu(apps)
         print(sparkle)
         style.printSignature()
         gpu.setForeground(style.text)
+        gpu.setForeground(style.highlight)
+        local sparkle = style.sparkleStyles[math.random(#style.sparkleStyles)]
+        print(sparkle)
         os.exit()
     elseif choice and apps[choice] then
         local appPath = APPS_DIR .. apps[choice] .. "/" .. apps[choice] .. ".lua"
