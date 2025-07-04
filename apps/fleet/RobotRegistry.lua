@@ -4,47 +4,41 @@ local RobotRegistry = {}
 RobotRegistry.__index = RobotRegistry
 
 function RobotRegistry.new()
-    local self = setmetatable({}, RobotRegistry)
-    self.path   = "/data/robots.lua"
-    self.robots = self:load()          -- { robots = { … } }
-    return self
+    return setmetatable({ path = "/data/robots.lua" }, RobotRegistry)
 end
 
--- ---------- file IO ----------
-
+-- ---------- file I/O ----------
 function RobotRegistry:load()
     return DataHelper.loadTable(self.path) or { robots = {} }
 end
 
-function RobotRegistry:save()
-    DataHelper.saveTable(self.path, self.robots)
+function RobotRegistry:save(tbl)
+    DataHelper.saveTable(self.path, tbl)
 end
 
--- ---------- API ----------
-
+-- ---------- public API ----------
 function RobotRegistry:register(id, jobType)
-    table.insert(self.robots.robots, {
+    local d = self:load()
+    table.insert(d.robots, {
         id      = id,
         jobType = jobType,
         status  = "idle",
         active  = true
     })
-    self:save()
+    self:save(d)
 end
 
 function RobotRegistry:dismantle(id)
-    for _, r in ipairs(self.robots.robots) do
-        if r.id == id then
-            r.active = false
-            break
-        end
+    local d = self:load()
+    for _, r in ipairs(d.robots) do
+        if r.id == id then r.active = false break end
     end
-    self:save()
+    self:save(d)
 end
 
 function RobotRegistry:list()
-    self.robots = self:load()          -- refresh
-    for _, r in ipairs(self.robots.robots) do
+    local d = self:load()
+    for _, r in ipairs(d.robots) do
         if r.active then
             print(("🤖 %s [%s] – %s"):format(r.id, r.jobType, r.status))
         end
