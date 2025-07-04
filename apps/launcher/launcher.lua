@@ -17,6 +17,27 @@ local function center(text)
     gpu.set((x > 0 and x or 1), select(2, term.getCursor()), text)
 end
 
+-- 🌈 Animated rainbow splash line
+local function rainbowSplashLine(text)
+    local colors = {
+        0xFF0000, -- red
+        0xFF7F00, -- orange
+        0xFFFF00, -- yellow
+        0x00FF00, -- green
+        0x0000FF, -- blue
+        0x4B0082, -- indigo
+        0x8B00FF  -- violet
+    }
+
+    for i = 1, #text do
+        local c = colors[(i % #colors) + 1]
+        gpu.setForeground(c)
+        io.write(text:sub(i,i))
+        os.sleep(0.05)
+    end
+    print()
+end
+
 local function sparkleLine()
     local sparkles = {"*", "+", "✦", "✧", "✩"}
     for i = 1, 30 do
@@ -29,6 +50,14 @@ end
 
 local function splash()
     gpu.setForeground(style.header)
+    center(" __      __       .__                              ")
+    center("/  \\    /  \\ ____ |  |   ____  ____   _____   ____ ")
+    center("\\   \\/\\/   // __ \\|  | _/ ___\\/  _ \\ /     \\_/ __ \\")
+    center(" \\        /\\  ___/|  |_\\  \\__(  <_> )  Y Y  \\  ___/")
+    center("  \\__/\\  /  \\___  >____/\\___  >____/|__|_|  /\\___  >")
+    center("       \\/       \\/          \\/            \\/     \\/ ")
+    print()
+    gpu.setForeground(style.header)
     center("+--------------------------------------+")
     center("|                                      |")
     center("|   WELCOME TO THE GTNH CONTROLLER ✨  |")
@@ -39,6 +68,7 @@ local function splash()
     os.sleep(0.5)
 end
 
+-- 🌸 Cute dot loader with progress bar
 local function progressBar(message, total)
     io.write(message .. " [")
     for i = 1, total do
@@ -122,7 +152,7 @@ local function showMenu(apps)
         center("+--------------------------------------+")
         center("|                                      |")
         center("|   Thank you for using GTNH Control   |")
-        center("|            Have a pastel day! ✨     |")
+        center("|            Have a great day! ✨     |")
         center("|                                      |")
         center("+--------------------------------------+")
         gpu.setForeground(style.text)
