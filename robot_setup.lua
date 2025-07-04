@@ -38,6 +38,8 @@ os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH
 os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/Pathfinder.lua /apps/fleet/Pathfinder.lua")
 os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/robot_agent/robot_agent.lua /robot_agent.lua")
 os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/jobs/courier_job.lua /apps/fleet/jobs/courier_job.lua")
+os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/robots.lua /data/robots.lua")
+
 
 -- ✅ Reminder for ID
 if not fs.exists("/robot_id.txt") then

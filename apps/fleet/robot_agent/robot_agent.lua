@@ -14,7 +14,17 @@ file:close()
 
 print("🤖 Robot ID: " .. agent.id)
 
-local info = RobotRegistry.new():find(agent.id)
+local reg = RobotRegistry.new()
+local data = reg:load()
+
+local info = nil
+for _, robot in ipairs(data.robots) do
+    if robot.id == agent.id then
+        info = robot
+        break
+    end
+end
+
 if not info then
     print("❌ ERROR: Robot ID not found in registry!")
     return
@@ -73,3 +83,9 @@ end
 agent:checkForUpdates()
 agent:syncTasks()
 agent:start()
+
+
+if #me.tasks > 0 then
+    local taskId = me.tasks[1]
+    print("📝 Running first task: " .. taskId)
+end

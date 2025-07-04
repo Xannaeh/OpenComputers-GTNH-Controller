@@ -1,4 +1,3 @@
--- return a Lua table so dofile() gives it directly
 return {
   robots = {
     {
@@ -6,7 +5,7 @@ return {
       jobType = "courier",
       status = "idle",
       active = true,
-      tasks = {"task_001"},
+      tasks = {},
       x = 0,
       y = 64,
       z = 0
