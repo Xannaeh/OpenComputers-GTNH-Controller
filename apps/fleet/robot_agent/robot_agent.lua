@@ -1,23 +1,30 @@
 local component = require("component")
 local modem = component.modem
-local computer = require("computer")
 local serialization = require("serialization")
 local event = require("event")
+local computer = require("computer")
+local RobotRegistry = require("apps/fleet/RobotRegistry")
+local Pathfinder = require("apps/fleet/Pathfinder")
 
 local agent = {}
-agent.version = "2.0.0"
+agent.version = "3.0.0"
+
+-- Load robot ID
+local file = io.open("/robot_id.txt", "r")
+agent.id = file:read("*l")
+file:close()
 
 agent.tasks = {}
 
 function agent:checkForUpdates()
-    print("🔄 Checking for updates at recharge station...")
+    print("🔄 Checking for updates...")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/robot_agent/robot_agent.lua -O /robot_agent.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/jobs/courier_job.lua -O /jobs/courier_job.lua")
+    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/Pathfinder.lua -O /apps/fleet/Pathfinder.lua")
 end
 
 function agent:syncTasks()
-    print("🔗 Syncing tasks from base...")
-    -- Optional future: pull tasks from file or server
+    -- Later: real sync with server
 end
 
 function agent:runJob(jobType, params)
@@ -29,32 +36,29 @@ function agent:runJob(jobType, params)
     end
     local job = jobFile()
     if job.run then
-        job.run(params)
+        job.run(params, agent)
     else
-        print("⚠️ Invalid job handler in " .. jobPath)
+        print("⚠️ Invalid job handler.")
     end
 end
 
 function agent:start()
     modem.open(123)
-    print("📡 Listening + processing queue...")
+    print("📡 Listening + queue processor: " .. agent.id)
     while true do
-        local name, _, from, port, _, message = event.pull(0.1)
+        local name, _, _, _, _, message = event.pull(0.1)
         if name == "modem_message" then
-            print("💌 Got message: " .. message)
             local ok, task = pcall(serialization.unserialize, message)
-            if ok and task and task.jobType then
-                table.insert(self.tasks, task)
-                print("➕ Added to queue: " .. task.jobType)
-            else
-                print("⚠️ Bad task payload.")
+            if ok and task and task.assignedRobot == agent.id then
+                table.insert(agent.tasks, task)
+                print("➕ Task accepted: " .. task.jobType)
             end
         end
 
-        if #self.tasks > 0 then
-            local task = table.remove(self.tasks, 1)
-            print("🚚 Running task: " .. task.jobType)
-            self:runJob(task.jobType, task.params)
+        if #agent.tasks > 0 then
+            local task = table.remove(agent.tasks, 1)
+            print("🚚 Running: " .. task.jobType)
+            agent:runJob(task.jobType, task.params)
         end
     end
 end

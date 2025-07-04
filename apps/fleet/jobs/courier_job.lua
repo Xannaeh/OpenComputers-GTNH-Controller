@@ -1,30 +1,31 @@
 local component = require("component")
 local ic = component.inventory_controller
-local robot = require("robot")
 local InventoryRegistry = require("apps/fleet/InventoryRegistry")
+local Pathfinder = require("apps/fleet/Pathfinder")
 
 local courier = {}
 
-function courier.run(params)
-    local registry = InventoryRegistry.new()
+function courier.run(params, agent)
+    local invReg = InventoryRegistry.new()
+    local from = invReg:find(params.fromName)
+    local to = invReg:find(params.toName)
 
-    local from = registry:find(params.fromName)
-    local to = registry:find(params.toName)
+    local reg = require("apps/fleet/RobotRegistry").new()
+    local robotData = reg:find(agent.id)
 
     if not from or not to then
         print("❌ Source or destination inventory not found!")
         return
     end
 
-    print("🚶 Moving to: " .. from.name)
-    -- TODO: Real pathfinding — for now, just assume it’s straight line
-    -- e.g. robot.forward() n times
 
-    print("📦 Picking up...")
+    print("🚶 Moving to: " .. from.name)
+    Pathfinder.moveTo(agent.id, robotData, from)
     ic.suckFromSlot(from.side, 1, params.count or 1)
 
-    print("🚶 Moving to: " .. to.name)
-    -- TODO: Real pathfinding again
+
+    print("📦 Picking up...")
+    Pathfinder.moveTo(agent.id, robotData, to)
 
     print("📦 Dropping...")
     ic.dropIntoSlot(to.side, 1, params.count or 1)

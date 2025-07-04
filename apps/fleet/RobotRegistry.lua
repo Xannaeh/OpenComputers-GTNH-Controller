@@ -23,11 +23,14 @@ end
 function RobotRegistry:register(id, jobType)
     local d = self:load()
     table.insert(d.robots, {
-        id = id,
+        id      = id,
         jobType = jobType,
-        status = "idle",
-        active = true,
-        tasks = {}
+        status  = "idle",
+        active  = true,
+        tasks   = {},
+        x = 0,
+        y = 64,
+        z = 0
     })
     self:save(d)
 end
@@ -43,27 +46,25 @@ function RobotRegistry:deactivate(id)
     self:save(d)
 end
 
-function RobotRegistry:list()
+function RobotRegistry:find(id)
     local d = self:load()
     for _, r in ipairs(d.robots) do
-        if r.active then
-            local taskCount = r.tasks and #r.tasks or 0
-            print(("🤖 %s [%s] – %s – Tasks: %d"):format(r.id, r.jobType, r.status, taskCount))
-        end
+        if r.id == id then return r end
     end
+    return nil
 end
 
 function RobotRegistry:findBestRobot(jobType)
     local d = self:load()
     local best = nil
     for _, robot in ipairs(d.robots) do
-        if robot.active and robot.status ~= "offline" and robot.jobType == jobType then
+        if robot.active and robot.jobType == jobType then
             if not best or #robot.tasks < #best.tasks then
                 best = robot
             end
         end
     end
-    return best, d
+    return best
 end
 
 function RobotRegistry:assignTask(robotId, taskId)
@@ -76,6 +77,29 @@ function RobotRegistry:assignTask(robotId, taskId)
         end
     end
     self:save(d)
+end
+
+function RobotRegistry:updatePosition(robotId, x, y, z)
+    local d = self:load()
+    for _, robot in ipairs(d.robots) do
+        if robot.id == robotId then
+            robot.x = x
+            robot.y = y
+            robot.z = z
+            break
+        end
+    end
+    self:save(d)
+end
+
+function RobotRegistry:list()
+    local d = self:load()
+    for _, r in ipairs(d.robots) do
+        if r.active then
+            print(("🤖 %s [%s] – %s – Tasks: %d – Pos: (%d,%d,%d)"):format(
+                    r.id, r.jobType, r.status, #r.tasks, r.x, r.y, r.z))
+        end
+    end
 end
 
 return RobotRegistry
