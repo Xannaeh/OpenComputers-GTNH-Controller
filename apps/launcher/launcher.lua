@@ -17,35 +17,15 @@ local function center(text)
     gpu.set((x > 0 and x or 1), select(2, term.getCursor()), text)
 end
 
--- 🌈 Animated rainbow splash line
-local function rainbowSplashLine(text)
-    local colors = {
-        0xFF0000, -- red
-        0xFF7F00, -- orange
-        0xFFFF00, -- yellow
-        0x00FF00, -- green
-        0x0000FF, -- blue
-        0x4B0082, -- indigo
-        0x8B00FF  -- violet
-    }
-
-    for i = 1, #text do
-        local c = colors[(i % #colors) + 1]
-        gpu.setForeground(c)
-        io.write(text:sub(i,i))
-        os.sleep(0.05)
-    end
-    print()
-end
-
 local function sparkleLine()
     local sparkles = {"*", "+", "✦", "✧", "✩"}
-    for i = 1, 30 do
-        gpu.setForeground(style.highlight)
-        io.write(sparkles[math.random(1, #sparkles)])
-        os.sleep(0.05)
+    local w = getScreenWidth()
+    local line = ""
+    for i = 1, w do
+        line = line .. sparkles[math.random(1, #sparkles)]
     end
-    print()
+    gpu.setForeground(style.highlight)
+    center(line)
 end
 
 local function splash()
@@ -68,7 +48,6 @@ local function splash()
     os.sleep(0.5)
 end
 
--- 🌸 Cute dot loader with progress bar
 local function progressBar(message, total)
     io.write(message .. " [")
     for i = 1, total do
@@ -100,43 +79,24 @@ local function showMenu(apps)
     splash()
 
     gpu.setForeground(style.header)
-    print("\n+-------------- STATUS ---------------+")
-
-    -- ♥ Power
+    center("+-------------- STATUS ---------------+")
     gpu.setForeground(style.highlight)
-    io.write("♥ ")
-    gpu.setForeground(style.text)
-    print("Power: [TODO]")
-
-    -- ♥ Alerts
-    gpu.setForeground(style.highlight)
-    io.write("♥ ")
-    gpu.setForeground(style.text)
-    print("Alerts: [TODO]")
-
-    -- ♥ Notifications
-    gpu.setForeground(style.highlight)
-    io.write("♥ ")
-    gpu.setForeground(style.text)
-    print("Notifications: [TODO]")
+    center("♥ Power: [TODO]")
+    center("♥ Alerts: [TODO]")
+    center("♥ Notifications: [TODO]")
+    gpu.setForeground(style.header)
+    center("+-------------------------------------+\n")
 
     gpu.setForeground(style.header)
-    print("+-------------------------------------+\n")
-
-    gpu.setForeground(style.header)
-    print("+-------------- PROGRAMS -------------+")
+    center("+-------------- PROGRAMS -------------+")
     for i, app in ipairs(apps) do
         gpu.setForeground(style.highlight)
-        io.write(i .. ". ")
-        gpu.setForeground(style.text)
-        print(app)
+        center(i .. ". " .. app)
     end
     gpu.setForeground(style.highlight)
-    io.write((#apps + 1) .. ". ")
-    gpu.setForeground(style.text)
-    print("Exit")
+    center((#apps + 1) .. ". Exit")
     gpu.setForeground(style.header)
-    print("+-------------------------------------+")
+    center("+-------------------------------------+")
 
     print()
     gpu.setForeground(style.highlight)
@@ -152,7 +112,7 @@ local function showMenu(apps)
         center("+--------------------------------------+")
         center("|                                      |")
         center("|   Thank you for using GTNH Control   |")
-        center("|            Have a great day! ✨     |")
+        center("|          Have a great day! ✨        |")
         center("|                                      |")
         center("+--------------------------------------+")
         gpu.setForeground(style.text)
@@ -199,4 +159,4 @@ local function main()
     end
 end
 
-return main()
+main()
