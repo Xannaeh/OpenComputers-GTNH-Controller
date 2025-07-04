@@ -8,7 +8,12 @@ function RobotRegistry.new()
 end
 
 function RobotRegistry:load()
-    return DataHelper.loadTable(self.path) or { robots = {} }
+    local d = DataHelper.loadTable(self.path) or { robots = {} }
+    -- 🛡️ Safe patch: add tasks field to old robots
+    for _, robot in ipairs(d.robots) do
+        if not robot.tasks then robot.tasks = {} end
+    end
+    return d
 end
 
 function RobotRegistry:save(tbl)
@@ -42,12 +47,12 @@ function RobotRegistry:list()
     local d = self:load()
     for _, r in ipairs(d.robots) do
         if r.active then
-            print(("🤖 %s [%s] – %s – Tasks: %d"):format(r.id, r.jobType, r.status, #r.tasks))
+            local taskCount = r.tasks and #r.tasks or 0
+            print(("🤖 %s [%s] – %s – Tasks: %d"):format(r.id, r.jobType, r.status, taskCount))
         end
     end
 end
 
--- Find the robot with the fewest tasks for given jobType
 function RobotRegistry:findBestRobot(jobType)
     local d = self:load()
     local best = nil
