@@ -77,5 +77,8 @@ function agent:start()
     end
 end
 
+print("📂 Robot Registry path: " .. reg.path)
+
 agent:checkForUpdates()
 agent:start()
+
