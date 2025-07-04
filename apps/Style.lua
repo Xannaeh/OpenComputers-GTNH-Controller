@@ -13,10 +13,18 @@ style.header = style.colors.pink
 style.highlight = style.colors.blue
 style.text = style.colors.white
 
--- Reusable cute emoji list
-style.emojis = {"✨", "🌸", "💖", "🌙", "⭐", "🪐", "🌷"}
+-- Safer emojis — keep to simple Unicode or ASCII-friendly
+style.emojis = {
+    "*.*",
+    "^_^",
+    ":)",
+    "⭐",
+    "🌙",
+    "✨",
+    "<3"
+}
 
--- Reusable sparkle line styles
+-- Reusable sparkle styles
 style.sparkleStyles = {
     "✦ ✧ ✩ ✪ ✫ ✦ ✧ ✩ ✪ ✫ ✦ ✧ ✩ ✪ ✫ ✦ ✧",
     "★ ☆ ★ ☆ ★ ☆ ★ ☆ ★ ☆ ★ ☆ ★ ☆ ★ ☆",
@@ -25,7 +33,7 @@ style.sparkleStyles = {
     "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~"
 }
 
--- Tiny pastel ASCII cat
+-- Safe ASCII pastel cat
 style.cat = [[
  /\_/\
 ( o.o )
@@ -34,12 +42,23 @@ style.cat = [[
 
 -- Random pastel fortune quotes
 style.fortunes = {
-    "You are the sparkle in the code 🌸",
-    "Pastel dreams bring bright builds ✨",
-    "Take a break & feed your cat 💖",
+    "You are the sparkle in the code ✨",
+    "Pastel dreams build bright machines!",
+    "Take a break & stretch your paws ^_^",
     "You can do hard things ⭐",
     "GTNH loves your pastel vibe 🌙",
-    "Stay cozy, code cutely 🪐"
+    "Stay cozy, craft cutely!"
 }
+
+-- Tiny helper to print the cat + fortune
+function style.printSignature()
+    local gpu = require("component").gpu
+    gpu.setForeground(style.highlight)
+    print(style.cat)
+
+    gpu.setForeground(style.text)
+    local fortune = style.fortunes[math.random(#style.fortunes)]
+    print(fortune)
+end
 
 return style
