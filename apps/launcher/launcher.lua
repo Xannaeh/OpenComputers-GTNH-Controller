@@ -3,7 +3,9 @@ local term = require("term")
 
 local APPS_DIR = "/apps/"
 
+-- 🌸 Pastel theme: best ANSI combo
 local pink = "\27[35m"
+local blue = "\27[36m"
 local white = "\27[37m"
 
 local function listApps()
@@ -25,11 +27,12 @@ local function showMenu(apps)
     term.clear()
     term.setCursor(1, 1)
 
-    print(pink .. "=== ✨ MAIN MENU ✨ ===" .. white .. "\n")
-    print(pink .. "=== STATUS ===" .. white)
-    print(pink .. "♥ Power: [TODO]")
+    print(pink .. "=== ✨ MAIN MENU ✨ ===\n" .. white)
+
+    print(pink .. "=== STATUS ===")
+    print("♥ Power: [TODO]")
     print("♥ Alerts: [TODO]")
-    print("♥ Notifications: [TODO]\n")
+    print("♥ Notifications: [TODO]\n" .. white)
 
     print(pink .. "=== Programs ===" .. white)
     for i, app in ipairs(apps) do
@@ -37,7 +40,7 @@ local function showMenu(apps)
     end
     print(pink .. (#apps + 1) .. ". Exit" .. white)
 
-    print("\nSelect program number:")
+    print("\n" .. blue .. "Select program number:" .. white)
     local choice = tonumber(term.read())
 
     if choice == #apps + 1 then
@@ -52,13 +55,13 @@ local function showMenu(apps)
             print(pink .. "=== Running " .. apps[choice] .. " ===" .. white)
             app()
         else
-            print("Error: Failed to load " .. appPath)
+            print(blue .. "Error: Failed to load " .. appPath .. white)
         end
     else
-        print("Invalid choice. Try again.")
+        print(blue .. "Invalid choice. Try again." .. white)
     end
 
-    print("\nPress Enter to return to the Main Menu...")
+    print("\n" .. blue .. "Press Enter to return to the Main Menu..." .. white)
     term.read()
     return true
 end
