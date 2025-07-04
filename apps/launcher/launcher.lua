@@ -6,6 +6,30 @@ local style = require("apps/Style")
 
 local APPS_DIR = "/apps/"
 
+local function splash()
+    gpu.setForeground(style.header)
+    print([[
+ __      __       .__
+/  \    /  \ ____ |  |   ____  ____   _____   ____
+\   \/\/   // __ \|  | _/ ___\/  _ \ /     \_/ __ \
+ \        /\  ___/|  |_\  \__(  <_> )  Y Y  \  ___/
+  \__/\  /  \___  >____/\___  >____/|__|_|  /\___  >
+       \/       \/          \/            \/     \/
+    ]])
+    gpu.setForeground(style.text)
+    print("Welcome to the GTNH BaseController ✨\n")
+    os.sleep(0.5) -- pause for effect
+end
+
+local function animateDots(text, count)
+    io.write(text)
+    for i = 1, count do
+        io.write(".")
+        os.sleep(0.2)
+    end
+    print()
+end
+
 local function listApps()
     local apps = {}
     for app in fs.list(APPS_DIR) do
@@ -25,8 +49,7 @@ local function showMenu(apps)
     term.clear()
     term.setCursor(1, 1)
 
-    gpu.setForeground(style.header)
-    print("=== ✨ MAIN MENU ✨ ===\n")
+    splash()
 
     gpu.setForeground(style.header)
     print("=== STATUS ===")
@@ -53,6 +76,8 @@ local function showMenu(apps)
     io.write("Select program number: ")
     gpu.setForeground(style.text)
     local choice = tonumber(term.read())
+
+    animateDots("Launching", 3)
 
     if choice == #apps + 1 then
         gpu.setForeground(style.header)
