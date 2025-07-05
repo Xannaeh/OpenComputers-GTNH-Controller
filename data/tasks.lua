@@ -5,7 +5,7 @@ return {
       description = "Deliver iron",
       jobType = "courier",
       priority    = 1,
-      parent      = false,      -- nil/false is fine
+      parent      = false,
       subtasks    = {},
       deleted     = false,
       params = {
@@ -13,7 +13,7 @@ return {
         toName = "BaseOutputChest",
         count = 10
       },
-      assignedRobot = "robot_001",
+      assignedRobot = nil,  -- ✅ leave this NIL for auto-matching!
       deleted = false
     }
   }

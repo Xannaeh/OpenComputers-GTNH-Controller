@@ -15,7 +15,6 @@ function fleet:showTasks()
     self.tasks:list()
 end
 
-
 function fleet:addTask(task)
     self.tasks:add(task)
     -- Immediately try to assign it
@@ -39,7 +38,6 @@ function fleet:assignTasks()
         end
     end
 end
-
 
 function fleet:menu()
     term.clear()
@@ -188,6 +186,13 @@ function fleet:menu()
     end
 
     self:menu()
+end
+
+function fleet:autoLoop()
+    while true do
+        self:assignTasks()
+        os.sleep(5) -- or whatever interval
+    end
 end
 
 fleet:menu()

@@ -81,8 +81,14 @@ function agent:start()
                 print("➕ New task received: " .. task.jobType)
                 table.insert(agent.tasks, task)
                 self:saveTasks()
-                print("➕ Task received & saved: " .. task.jobType .. " (" .. (task.id or "?") .. ")")
+                print("✅ Task saved. Total tasks: " .. #agent.tasks)
             end
+        end
+
+        -- DEBUG
+        print("📋 Current saved tasks:")
+        for i, t in ipairs(agent.tasks) do
+            print(" - " .. (t.id or "?") .. " ➜ " .. t.jobType)
         end
 
         if #agent.tasks > 0 then
@@ -97,6 +103,7 @@ function agent:start()
         end
     end
 end
+
 
 print("📂 Robot Registry path: " .. reg.path)
 
