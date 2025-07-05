@@ -3,6 +3,7 @@ local serialization = require("serialization")
 local TaskRegistry = require("apps/fleet/TaskRegistry")
 local DataHelper = require("apps/DataHelper")
 local event = require("event")
+local computer = require("computer")  -- ✅ ✅ FIX: you need this!
 
 print("🌸 Dispatcher starting...")
 
