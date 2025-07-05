@@ -59,6 +59,8 @@ local function main()
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/DataHelper.lua /apps/DataHelper.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/Style.lua /apps/Style.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/dispatcher.lua /apps/fleet/dispatcher.lua")
+    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/auto_assigner.lua /apps/fleet/auto_assigner.lua")
+
 
     print("🌸 Ensuring data files...")
     ensureFile("/data/config.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/data/config.lua")

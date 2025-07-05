@@ -14,7 +14,7 @@ return {
         count = 10
       },
       assignedRobot = nil,  -- ✅ leave this NIL for auto-matching!
-      deleted = false
+      sent  = false
     }
   }
 }
