@@ -2,6 +2,7 @@ local component = require("component")
 local serialization = require("serialization")
 local TaskRegistry = require("apps/fleet/TaskRegistry")
 local DataHelper = require("apps/DataHelper")
+local event = require("event")
 
 print("🌸 Dispatcher starting...")
 
@@ -21,7 +22,8 @@ if not modem then
     return
 end
 
--- ✅ Loop mode so it keeps running
+modem.open(123)
+
 while true do
     local registry = TaskRegistry.new()
     local tasksData = registry:load()
@@ -35,6 +37,7 @@ while true do
     for _, task in ipairs(tasks) do
         if not task.deleted and task.assignedRobot and not task.sent then
             local payload = {
+                id = task.id,
                 jobType = task.jobType,
                 params = task.params,
                 assignedRobot = task.assignedRobot
@@ -54,7 +57,6 @@ while true do
                 print("❌ Broadcast failed.")
             end
 
-            -- Optional: handle subtasks later
             if task.subtasks and #task.subtasks > 0 then
                 print("🔗 Subtasks: " .. table.concat(task.subtasks, ","))
             end
@@ -68,11 +70,31 @@ while true do
         registry:save(tasksData)
     end
 
+    -- ✅ Listen for ACKs for 5 seconds
+    local startTime = computer.uptime()
+    while computer.uptime() - startTime < 5 do
+        local name, _, _, _, _, message = event.pull(0.5)
+        if name == "modem_message" then
+            local ok, msg = pcall(serialization.unserialize, message)
+            if ok and msg and msg.event == "task_completed" then
+                print("✅ Completion ACK from " .. msg.robotId .. " for " .. msg.taskId)
+                for _, t in ipairs(tasks) do
+                    if t.id == msg.taskId then
+                        t.deleted = true
+                        print("✅ Marked task " .. t.id .. " as completed.")
+                        break
+                    end
+                end
+                registry:save(tasksData)
+            end
+        end
+    end
+
     if dispatched == 0 then
         print("⚠️ No tasks to dispatch! Sleeping...")
     else
         print("🌸 All tasks dispatched. Sleeping...")
     end
 
-    os.sleep(5)  -- wait 5 seconds, then check again
+    os.sleep(5)
 end

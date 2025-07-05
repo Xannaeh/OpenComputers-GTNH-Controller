@@ -3,17 +3,16 @@ local modem = component.modem
 local serialization = require("serialization")
 local event = require("event")
 local RobotRegistry = require("apps/fleet/RobotRegistry")
+local DataHelper = require("apps/DataHelper")
 
 local agent = {}
-agent.version = "4.1.1-debug"
+agent.version = "5.0.0"
 
--- ✅ Read ID
 local file = io.open("/robot_id.txt", "r")
 agent.id = file:read("*l")
 file:close()
 print("🤖 Robot ID: " .. agent.id)
 
--- ✅ Load registry
 local reg = RobotRegistry.new()
 local data = reg:load()
 
@@ -26,23 +25,16 @@ for _, robot in ipairs(data.robots) do
 end
 
 if not info then
-    print("❌ Robot ID not found in registry!")
+    print("❌ ERROR: Robot ID not found in registry!")
     return
 end
 
 print(("📍 Registered at: (%d,%d,%d)"):format(info.x or 0, info.y or 0, info.z or 0))
 
-agent.tasks = {}
+agent.tasks = DataHelper.loadTable("/data/robot_tasks.lua") or {}
 
--- Load any tasks from registry if present
-if info.tasks and #info.tasks > 0 then
-    print("🔍 Found " .. tostring(#info.tasks) .. " tasks in registry.")
-    for _, t in ipairs(info.tasks) do
-        print("📋 Registry task: " .. t)
-        -- We only know the ID, so broadcast must re-provide full task!
-    end
-else
-    print("📂 No tasks in registry at startup.")
+function agent:saveTasks()
+    DataHelper.saveTable("/data/robot_tasks.lua", self.tasks)
 end
 
 function agent:checkForUpdates()
@@ -52,8 +44,7 @@ function agent:checkForUpdates()
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/Pathfinder.lua -O /apps/fleet/Pathfinder.lua")
 end
 
-function agent:runJob(jobType, params)
-    print("⚙️ Loading job: " .. jobType)
+function agent:runJob(jobType, params, taskId)
     local jobPath = "/apps/fleet/jobs/" .. jobType .. "_job.lua"
     local ok, jobFile = pcall(loadfile, jobPath)
     if not ok or not jobFile then
@@ -64,6 +55,14 @@ function agent:runJob(jobType, params)
     if job.run then
         print("✅ Running job handler.")
         job.run(params, agent)
+        print("✅ Job done: " .. jobType)
+
+        modem.broadcast(123, serialization.serialize({
+            event = "task_completed",
+            robotId = agent.id,
+            taskId = taskId
+        }))
+        print("📡 Task completion ACK sent: " .. taskId)
     else
         print("⚠️ Invalid job handler.")
     end
@@ -81,9 +80,8 @@ function agent:start()
             if ok and task and task.assignedRobot == agent.id then
                 print("➕ New task received: " .. task.jobType)
                 table.insert(agent.tasks, task)
-                print("📋 Task list size: " .. #agent.tasks)
-            else
-                print("⚠️ Message ignored or not for me.")
+                self:saveTasks()
+                print("➕ Task received & saved: " .. task.jobType .. " (" .. (task.id or "?") .. ")")
             end
         end
 
@@ -91,10 +89,11 @@ function agent:start()
             print("🕒 Tasks in queue: " .. #agent.tasks)
             table.sort(agent.tasks, function(a, b) return (a.priority or 1) < (b.priority or 1) end)
             local task = table.remove(agent.tasks, 1)
-            print("🚚 Executing: " .. task.jobType)
-            agent:runJob(task.jobType, task.params)
+            self:saveTasks()
+            print("🚚 Running task: " .. task.jobType)
+            agent:runJob(task.jobType, task.params, task.id)
         else
-            print("⏳ No tasks to run right now...")
+            print("💤 No tasks to run right now...")
         end
     end
 end
