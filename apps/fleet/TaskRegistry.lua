@@ -32,17 +32,30 @@ function TaskRegistry:list()
     end
 end
 
-
 function TaskRegistry:assign(taskId, robotId)
     local d = self:load()
     for _, t in ipairs(d.tasks) do
         if t.id == taskId then
             t.assignedRobot = robotId
+            t.sent = false  -- ✅ reset sent so dispatcher picks it up
+            print("✅ Assigned " .. t.id .. " ➜ " .. robotId)
             break
         end
     end
     self:save(d)
 end
 
+function TaskRegistry:unassign(taskId)
+    local d = self:load()
+    for _, t in ipairs(d.tasks) do
+        if t.id == taskId then
+            t.assignedRobot = nil
+            t.sent = false
+            print("↩️ Unassigned " .. t.id)
+            break
+        end
+    end
+    self:save(d)
+end
 
 return TaskRegistry
