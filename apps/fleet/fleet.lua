@@ -17,7 +17,6 @@ end
 
 function fleet:addTask(task)
     self.tasks:add(task)
-    -- Immediately try to assign it
     self:assignTasks()
 end
 
@@ -107,7 +106,8 @@ function fleet:menu()
             parent = nil,
             subtasks = {},
             deleted = false,
-            assignedRobot = nil
+            assignedRobot = nil,
+            sent = false
         }
         self:addTask(task)
 
@@ -186,13 +186,6 @@ function fleet:menu()
     end
 
     self:menu()
-end
-
-function fleet:autoLoop()
-    while true do
-        self:assignTasks()
-        os.sleep(5) -- or whatever interval
-    end
 end
 
 fleet:menu()

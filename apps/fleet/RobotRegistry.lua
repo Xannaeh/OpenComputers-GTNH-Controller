@@ -9,7 +9,6 @@ end
 
 function RobotRegistry:load()
     local d = DataHelper.loadTable(self.path) or { robots = {} }
-    -- 🛡️ Safe patch: add tasks field to old robots
     for _, robot in ipairs(d.robots) do
         if not robot.tasks then robot.tasks = {} end
     end
@@ -27,14 +26,13 @@ function RobotRegistry:register(id, jobType)
         jobType = jobType,
         status = "idle",
         active = true,
-        tasks = {}, -- 🫧 always initialize
+        tasks = {},
         x = 0,
         y = 64,
         z = 0
     })
     self:save(d)
 end
-
 
 function RobotRegistry:deactivate(id)
     local d = self:load()
@@ -68,7 +66,6 @@ function RobotRegistry:findBestRobot(jobType)
     return best
 end
 
-
 function RobotRegistry:assignTask(robotId, taskId)
     local d = self:load()
     for _, robot in ipairs(d.robots) do
@@ -77,13 +74,23 @@ function RobotRegistry:assignTask(robotId, taskId)
                 robot.tasks = {}
             end
             table.insert(robot.tasks, taskId)
-            robot.status = "busy"
+            -- ❌ Don’t set busy yet — let robot do it when it receives!
             break
         end
     end
     self:save(d)
 end
 
+function RobotRegistry:updateStatus(robotId, status)
+    local d = self:load()
+    for _, robot in ipairs(d.robots) do
+        if robot.id == robotId then
+            robot.status = status
+            break
+        end
+    end
+    self:save(d)
+end
 
 function RobotRegistry:updatePosition(robotId, x, y, z)
     local d = self:load()
@@ -111,6 +118,5 @@ function RobotRegistry:list()
         end
     end
 end
-
 
 return RobotRegistry
