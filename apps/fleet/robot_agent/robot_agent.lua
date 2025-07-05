@@ -5,15 +5,15 @@ local event = require("event")
 local RobotRegistry = require("apps/fleet/RobotRegistry")
 
 local agent = {}
-agent.version = "4.0.1"
+agent.version = "4.1.0"
 
--- ✅ Read ID
+-- Load ID
 local file = io.open("/robot_id.txt", "r")
 agent.id = file:read("*l")
 file:close()
 print("🤖 Robot ID: " .. agent.id)
 
--- ✅ Check registry
+-- Load Registry
 local reg = RobotRegistry.new()
 local data = reg:load()
 
@@ -26,21 +26,18 @@ for _, robot in ipairs(data.robots) do
 end
 
 if not info then
-    print("❌ ERROR: Robot ID not found in registry!")
+    print("❌ Robot not found in registry!")
     return
 end
 
 print(("📍 Registered at: (%d,%d,%d)"):format(info.x or 0, info.y or 0, info.z or 0))
-
-agent.tasks = {}
+agent.tasks = info.tasks or {}
 
 function agent:checkForUpdates()
-    print("🔄 Checking for updates...")
-    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/robot_agent/robot_agent.lua -O apps/fleet/robot_agent/robot_agent.lua")
+    os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/robot_agent/robot_agent.lua -O /apps/fleet/robot_agent/robot_agent.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/jobs/courier_job.lua -O /apps/fleet/jobs/courier_job.lua")
     os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/apps/fleet/Pathfinder.lua -O /apps/fleet/Pathfinder.lua")
 end
-
 
 function agent:runJob(jobType, params)
     local jobPath = "/apps/fleet/jobs/" .. jobType .. "_job.lua"
@@ -60,19 +57,22 @@ end
 function agent:start()
     modem.open(123)
     print("📡 Listening for tasks...")
+
     while true do
         local name, _, _, _, _, message = event.pull(0.1)
         if name == "modem_message" then
             local ok, task = pcall(serialization.unserialize, message)
             if ok and task and task.assignedRobot == agent.id then
+                print("➕ Received new task: " .. task.jobType)
                 table.insert(agent.tasks, task)
-                print("➕ Task accepted: " .. task.jobType)
             end
         end
 
         if #agent.tasks > 0 then
+            -- Sort by priority
+            table.sort(agent.tasks, function(a, b) return (a.priority or 1) < (b.priority or 1) end)
             local task = table.remove(agent.tasks, 1)
-            print("🚚 Running: " .. task.jobType)
+            print("🚚 Running task: " .. task.jobType)
             agent:runJob(task.jobType, task.params)
         end
     end
@@ -82,4 +82,3 @@ print("📂 Robot Registry path: " .. reg.path)
 
 agent:checkForUpdates()
 agent:start()
-
