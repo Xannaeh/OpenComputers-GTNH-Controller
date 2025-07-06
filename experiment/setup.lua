@@ -60,7 +60,7 @@ local function main()
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/ui.lua /experiment/server/ui.lua")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/network.lua /experiment/server/network.lua")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/utils.lua /experiment/server/utils.lua")
-  os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/utils.lua /experiment/TasksRegistry/utils.lua")
+  os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/TasksRegistry.lua /experiment/server/TasksRegistry.lua")
 
 
 
