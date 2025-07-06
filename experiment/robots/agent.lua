@@ -25,9 +25,10 @@ function Agent:run()
             self.network:report_done(task.id or "unknown")
         else
             print("No tasks, waiting...")
-            os.sleep(5)
         end
+        os.sleep(5) -- ✅ Always sleep 5s before next loop
     end
 end
+
 
 return Agent

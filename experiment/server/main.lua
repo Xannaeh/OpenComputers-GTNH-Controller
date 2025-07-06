@@ -22,7 +22,7 @@ local dispatcher = Dispatcher:new()
 -- Add a test task if none exist
 if #dispatcher.tasks_registry:list() == 0 then
     dispatcher:add_task({
-        id = "task1",
+        id = tostring(math.floor(computer.uptime() * 1000)),
         type = "courier",
         item_name = "minecraft:iron_ingot",
         amount = 4
