@@ -63,11 +63,14 @@ end
 function TasksRegistry:mark_done(id)
     for _, task in ipairs(self.tasks) do
         if tostring(task.id) == tostring(id) then
+            print("Marking task " .. id .. " as done...")
             task.status = "done"
             self:save()
+            print("✅ Saved tasks after marking done.")
             return true
         end
     end
+    print("⚠️ Task " .. id .. " not found to mark done.")
     return false
 end
 

@@ -11,7 +11,6 @@ local computer = require("computer")
 local modem = component.modem
 local Dispatcher = require("dispatcher")
 
-
 -- Open port
 local PORT = 1234
 modem.open(PORT)
@@ -48,6 +47,7 @@ while true do
             local id = message:sub(11)
             dispatcher:mark_done(id)
             print("✅ Task " .. id .. " marked done.")
+            os.sleep(0.1) -- ✅ Small wait to guarantee disk flush
         end
     end
 end

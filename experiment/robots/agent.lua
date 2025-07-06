@@ -1,6 +1,5 @@
 -- agent.lua
--- Core RobotAgent class
--- Controls robot main behavior loop
+-- Robot Agent: infinite task loop with safe waits
 
 local Agent = {}
 
@@ -22,15 +21,13 @@ function Agent:run()
                 courier_job:execute(task)
             end
             self.network:report_done(task.id or "unknown")
-            os.sleep(3) -- ✅ Short pause to ensure done mark saves
+            os.sleep(3) -- ✅ Give server time to finish saving
         else
             print("No tasks, waiting...")
-            os.sleep(5)
+            os.sleep(5) -- ✅ Prevent spam
         end
         os.sleep(5) -- ✅ Always sleep 5s before next loop
     end
 end
-
-
 
 return Agent
