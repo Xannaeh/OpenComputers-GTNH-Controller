@@ -6,6 +6,7 @@ package.path = package.path .. ";/experiment/server/?.lua"
 local component = require("component")
 local event = require("event")
 local serialization = require("serialization")
+local computer = require("computer")
 
 local modem = component.modem
 local Dispatcher = require("dispatcher")

@@ -3,6 +3,7 @@
 
 local fs = require("filesystem")
 local serialization = require("serialization")
+local computer = require("computer")
 
 local TASKS_FILE = "/experiment/data/tasks.lua"
 
@@ -41,7 +42,7 @@ end
 function TasksRegistry:add(task)
     -- Auto-assign ID if missing
     if not task.id then
-        task.id = tostring(math.floor(computer.uptime() * 1000)) -- simple unique-ish ID
+        task.id = tostring(math.floor(computer.uptime() * 1000))
     end
     task.status = "pending"
     table.insert(self.tasks, task)
