@@ -28,36 +28,41 @@ end
 
 -- Move to a world coordinate in X/Z plane
 function Pathfinder:go_to(target)
-local dx = target.x - self.pos.x
-local dz = target.z - self.pos.z
+    if not target then
+        error("Pathfinder:go_to() called with nil target")
+    end
 
--- Move in X axis
-if dx ~= 0 then
-    if dx > 0 then
-        self:turn_to("east")
-    else
-        self:turn_to("west")
+    local dx = target.x - self.pos.x
+    local dz = target.z - self.pos.z
+
+    -- Move X
+    if dx ~= 0 then
+        if dx > 0 then
+            self:turn_to("east")
+        else
+            self:turn_to("west")
+        end
+        for i = 1, math.abs(dx) do
+            robot.forward()
+        end
+        self.pos.x = target.x
     end
-    for i = 1, math.abs(dx) do
-        robot.forward()
+
+    -- Move Z
+    if dz ~= 0 then
+        if dz > 0 then
+            self:turn_to("south")
+        else
+            self:turn_to("north")
+        end
+        for i = 1, math.abs(dz) do
+            robot.forward()
+        end
+        self.pos.z = target.z
     end
-    self.pos.x = target.x
+
+    -- TODO: handle Y later
 end
 
--- Move in Z axis
-if dz ~= 0 then
-    if dz > 0 then
-        self:turn_to("south")
-    else
-        self:turn_to("north")
-    end
-    for i = 1, math.abs(dz) do
-        robot.forward()
-    end
-    self.pos.z = target.z
-end
-
--- (Optional) handle Y (up/down)
-end
 
 return Pathfinder

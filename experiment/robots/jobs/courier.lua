@@ -73,7 +73,7 @@ function Courier:execute(task)
     end
 
     -- Return to base origin
-    pf:go_to({ x = 0, y = 64, z = 0 })
+     pf:go_to({ x = 32, y = 5, z = 0 })
 
     print("✅ Courier job done.")
 end
