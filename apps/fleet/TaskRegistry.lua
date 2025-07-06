@@ -37,12 +37,12 @@ function TaskRegistry:assign(taskId, robotId)
     for _, t in ipairs(d.tasks) do
         if t.id == taskId then
             t.assignedRobot = robotId
-            t.sent = false  -- ✅ reset sent so dispatcher picks it up
+            t.sent = false -- ✅ Reset for dispatcher!
             print("✅ Assigned " .. t.id .. " ➜ " .. robotId)
             break
         end
     end
-    self:save(d)
+    self:save(d) -- ✅ ✅ MUST save!
 end
 
 function TaskRegistry:unassign(taskId)

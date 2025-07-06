@@ -74,8 +74,7 @@ function RobotRegistry:assignTask(robotId, taskId)
                 robot.tasks = {}
             end
             table.insert(robot.tasks, taskId)
-            -- ❌ Don’t set busy yet — let robot do it when it receives!
-            break
+            break -- ❌ Don't force busy — robot does it when starting work!
         end
     end
     self:save(d)
