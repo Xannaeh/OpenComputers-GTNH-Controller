@@ -1,5 +1,6 @@
 -- main.lua
 -- Robot main entry point for testing Agent + Courier
+package.path = package.path .. ";/experiment/robots/?.lua"
 
 local Job = require("job")
 local Courier = require("jobs.courier")
