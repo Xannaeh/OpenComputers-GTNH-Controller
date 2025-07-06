@@ -8,7 +8,19 @@ local sides = require("sides")
 local ic = component.inventory_controller
 
 local Job = require("job")
-local Courier = Job:new()
+
+-- Proper class table
+local Courier = {}
+
+-- Inherit Job
+setmetatable(Courier, { __index = Job })
+Courier.__index = Courier
+
+function Courier:new()
+    local obj = Job:new()  -- call parent new
+    setmetatable(obj, Courier)
+    return obj
+end
 
 -- Helper: find an item slot in the chest
 local function find_item_slot(side, name)
