@@ -41,7 +41,7 @@ local function main()
   ensureDir("/experiment/robots")
   ensureDir("/experiment/robots/jobs")
   ensureDir("/experiment/server")
-  ensureDir("/data")
+  ensureDir("/experiment/data")   
 
   print("⬇️ Updating robot files...")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/robots/agent.lua /experiment/robots/agent.lua")
