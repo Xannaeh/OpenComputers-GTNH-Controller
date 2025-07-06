@@ -4,32 +4,29 @@
 
 local Agent = {}
 
-function Agent:new(job)
-    local obj = {
-        job = job
-    }
+function Agent:new(network)
+    local obj = { network = network }
     setmetatable(obj, self)
     self.__index = self
     return obj
 end
 
 function Agent:run()
-    if self.job then
-        self.job:execute()
-    elseif self.network then
+    while true do
         local task = self.network:request_task()
         if task then
             -- Example: dynamic job load
             if task.type == "courier" then
                 local Courier = require("jobs.courier")
                 local courier_job = Courier:new()
-                courier_job:execute(task)  -- Pass the task!
+                courier_job:execute(task)
             end
+
+            self.network:report_done(task.id or "unknown")
         else
-            print("No task received.")
+            print("No tasks, waiting...")
+            os.sleep(5)
         end
-    else
-        print("No job assigned, no network available.")
     end
 end
 

@@ -1,5 +1,5 @@
 -- TasksRegistry.lua
--- Persistent registry for tasks
+-- Persistent registry for tasks with status tracking
 
 local fs = require("filesystem")
 local serialization = require("serialization")
@@ -9,12 +9,9 @@ local TASKS_FILE = "/experiment/data/tasks.lua"
 local TasksRegistry = {}
 
 function TasksRegistry:new()
-    local obj = {
-        tasks = {}
-    }
+    local obj = { tasks = {} }
     setmetatable(obj, self)
     self.__index = self
-
     obj:load()
     return obj
 end
@@ -42,18 +39,35 @@ function TasksRegistry:save()
 end
 
 function TasksRegistry:add(task)
+    -- Auto-assign ID if missing
+    if not task.id then
+        task.id = tostring(math.floor(computer.uptime() * 1000)) -- simple unique-ish ID
+    end
+    task.status = "pending"
     table.insert(self.tasks, task)
     self:save()
 end
 
 function TasksRegistry:get_next()
-    if #self.tasks > 0 then
-        local task = table.remove(self.tasks, 1)
-        self:save()
-        return task
-    else
-        return nil
+    for _, task in ipairs(self.tasks) do
+        if task.status == "pending" then
+            task.status = "in_progress"
+            self:save()
+            return task
+        end
     end
+    return nil
+end
+
+function TasksRegistry:mark_done(id)
+    for _, task in ipairs(self.tasks) do
+        if tostring(task.id) == tostring(id) then
+            task.status = "done"
+            self:save()
+            return true
+        end
+    end
+    return false
 end
 
 function TasksRegistry:list()

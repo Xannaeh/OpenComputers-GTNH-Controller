@@ -24,4 +24,8 @@ function Dispatcher:get_next_task()
     return self.tasks_registry:get_next()
 end
 
+function Dispatcher:mark_done(id)
+    return self.tasks_registry:mark_done(id)
+end
+
 return Dispatcher

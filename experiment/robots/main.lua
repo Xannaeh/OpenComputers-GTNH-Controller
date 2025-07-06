@@ -7,7 +7,5 @@ local Network = require("network")
 local Agent = require("agent")
 
 local net = Network:new()
-local agent = Agent:new(nil)  -- No hardcoded job
-agent.network = net
-
+local agent = Agent:new(net)
 agent:run()

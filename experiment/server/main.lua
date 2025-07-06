@@ -2,13 +2,13 @@
 -- Server main loop: listens for robots, dispatches tasks
 
 package.path = package.path .. ";/experiment/server/?.lua"
+
 local component = require("component")
 local event = require("event")
 local serialization = require("serialization")
 
-local Dispatcher = require("dispatcher")
-
 local modem = component.modem
+local Dispatcher = require("dispatcher")
 
 
 -- Open port
@@ -19,9 +19,10 @@ print("Server dispatcher running. Listening on port " .. PORT)
 
 local dispatcher = Dispatcher:new()
 
--- Example: Add a task if none exist
+-- Add a test task if none exist
 if #dispatcher.tasks_registry:list() == 0 then
     dispatcher:add_task({
+        id = "task1",
         type = "courier",
         item_name = "minecraft:iron_ingot",
         amount = 4
@@ -41,6 +42,11 @@ while true do
                 modem.send(from, PORT, "no_task")
                 print("No tasks left.")
             end
+
+        elseif message:find("task_done:") == 1 then
+            local id = message:sub(11)
+            dispatcher:mark_done(id)
+            print("✅ Task " .. id .. " marked done.")
         end
     end
 end
