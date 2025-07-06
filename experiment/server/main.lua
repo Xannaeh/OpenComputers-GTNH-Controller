@@ -18,14 +18,14 @@ print("Server dispatcher running. Listening on port " .. PORT)
 
 local dispatcher = Dispatcher:new()
 
--- Add some test tasks
-dispatcher:add_task({
-    type = "courier",
-    origin = { x = 0, y = 64, z = 0 },
-    target = { x = 5, y = 64, z = 0 },
-    item_name = "minecraft:iron_ingot",
-    amount = 4
-})
+-- Example: Add a task if none exist
+if #dispatcher.registry:list() == 0 then
+    dispatcher:add_task({
+        type = "courier",
+        item_name = "minecraft:iron_ingot",
+        amount = 4
+    })
+end
 
 while true do
     local _, _, from, port, _, message = event.pull("modem_message")
@@ -34,12 +34,11 @@ while true do
         if message == "request_task" then
             local task = dispatcher:get_next_task()
             if task then
-                local data = serialization.serialize(task)
-                modem.send(from, PORT, data)
+                modem.send(from, PORT, serialization.serialize(task))
                 print("Sent task to " .. from)
             else
                 modem.send(from, PORT, "no_task")
-                print("No task to send.")
+                print("No tasks left.")
             end
         end
     end

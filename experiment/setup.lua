@@ -61,6 +61,11 @@ local function main()
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/network.lua /experiment/server/network.lua")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/utils.lua /experiment/server/utils.lua")
 
+
+
+  print("⬇️ Downloading persistent files...")
+  ensureFile("/experiment/data/tasks.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/data/tasks.lua")
+
   print("\n✅ Setup complete! Run your robot with: lua /experiment/robots/main.lua")
 end
 

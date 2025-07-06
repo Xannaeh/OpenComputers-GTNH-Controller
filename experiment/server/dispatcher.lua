@@ -1,27 +1,27 @@
 -- dispatcher.lua
--- Task Dispatcher: keeps task queue, assigns tasks to robots
+-- Dispatcher pulls tasks from TasksRegistry
+
+package.path = package.path .. ";/experiment/server/?.lua"
+
+local TasksRegistry = require("TasksRegistry")
 
 local Dispatcher = {}
 
 function Dispatcher:new()
-    local obj = {
-        tasks = {}
-    }
+    local obj = {}
     setmetatable(obj, self)
     self.__index = self
+
+    obj.tasks_registry = TasksRegistry:new()
     return obj
 end
 
 function Dispatcher:add_task(task)
-    table.insert(self.tasks, task)
+    self.tasks_registry:add(task)
 end
 
 function Dispatcher:get_next_task()
-    if #self.tasks > 0 then
-        return table.remove(self.tasks, 1)
-    else
-        return nil
-    end
+    return self.tasks_registry:get_next()
 end
 
 return Dispatcher
