@@ -41,7 +41,7 @@ local function main()
   ensureDir("/experiment/robots")
   ensureDir("/experiment/robots/jobs")
   ensureDir("/experiment/server")
-  ensureDir("/experiment/data")   
+  ensureDir("/experiment/data")
 
   print("⬇️ Updating robot files...")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/robots/agent.lua /experiment/robots/agent.lua")
@@ -60,6 +60,7 @@ local function main()
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/ui.lua /experiment/server/ui.lua")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/network.lua /experiment/server/network.lua")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/utils.lua /experiment/server/utils.lua")
+  os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/utils.lua /experiment/TasksRegistry/utils.lua")
 
 
 
