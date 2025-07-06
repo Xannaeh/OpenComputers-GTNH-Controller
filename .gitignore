@@ -39,3 +39,12 @@ luac.out
 *.x86_64
 *.hex
 
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Lua compiled outputs (if any)
+*.luac
+
+# Backup files
+*.bak
