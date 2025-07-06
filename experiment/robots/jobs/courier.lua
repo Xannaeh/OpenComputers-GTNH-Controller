@@ -1,5 +1,5 @@
 -- courier.lua
--- Courier Job: moves items between locations, using task data
+-- Courier Job: moves items between world coordinates using Pathfinder
 
 local component = require("component")
 local robot = require("robot")
@@ -8,6 +8,7 @@ local sides = require("sides")
 local ic = component.inventory_controller
 
 local Job = require("job")
+local Pathfinder = require("pathfinder")
 
 -- Proper class table
 local Courier = {}
@@ -17,7 +18,7 @@ setmetatable(Courier, { __index = Job })
 Courier.__index = Courier
 
 function Courier:new()
-    local obj = Job:new()  -- call parent new
+    local obj = Job:new()
     setmetatable(obj, Courier)
     return obj
 end
@@ -42,12 +43,11 @@ function Courier:execute(task)
 
     print("Item: " .. desired_item .. "  Amount: " .. desired_amount)
 
-    -- === PICKUP ===
+    -- === PATHFINDER ===
+    local pf = Pathfinder:new({ x = 32, y = 5, z = 0 }, "south")  -- TODO: your base coords & facing
 
-    -- Move to pickup chest (example: 3 blocks forward)
-    for i = 1, 3 do
-        robot.forward()
-    end
+    -- Go to origin chest (real world)
+    pf:go_to(task.origin)
 
     local pickup_side = sides.front
     local slot, available = find_item_slot(pickup_side, desired_item)
@@ -63,37 +63,17 @@ function Courier:execute(task)
         print("❌ Item not found in pickup chest.")
     end
 
-    -- Return to start
-    for i = 1, 3 do
-        robot.back()
-    end
+    -- Go to destination chest (real world)
+    pf:go_to(task.destination)
 
-    -- === DROP ===
-
-    -- Turn 180°
-    robot.turnLeft()
-    robot.turnLeft()
-
-    -- Move to drop-off chest (3 blocks forward other side)
-    for i = 1, 3 do
-        robot.forward()
-    end
-
-    -- Drop items
     if robot.drop(desired_amount) then
         print("✅ Dropped " .. desired_amount .. " of " .. desired_item)
     else
         print("⚠️ Nothing dropped.")
     end
 
-    -- Return to base
-    for i = 1, 3 do
-        robot.back()
-    end
-
-    -- Reset orientation
-    robot.turnLeft()
-    robot.turnLeft()
+    -- Return to base origin
+    pf:go_to({ x = 0, y = 64, z = 0 })
 
     print("✅ Courier job done.")
 end
