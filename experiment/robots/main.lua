@@ -1,12 +1,13 @@
 -- main.lua
--- Robot main entry point for testing Agent + Courier
-package.path = package.path .. ";/experiment/robots/?.lua"
+-- Robot entry for network test
 
-local Job = require("job")
-local Courier = require("jobs.courier")
+package.path = package.path .. ";/experiment/robots/?.lua;/experiment/robots/jobs/?.lua"
+
+local Network = require("network")
 local Agent = require("agent")
 
-local courier_job = Courier:new()
-local agent = Agent:new(courier_job)
+local net = Network:new()
+local agent = Agent:new(nil)  -- No hardcoded job
+agent.network = net
 
 agent:run()

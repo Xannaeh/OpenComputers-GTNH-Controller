@@ -10,11 +10,13 @@ local ic = component.inventory_controller
 local Job = require("job")
 local Courier = Job:new()
 
-function Courier:execute()
+function Courier:execute(task)
     print("Courier job started.")
 
-    local desired_item = "minecraft:iron_ingot"  -- Example: only iron ingots
-    local desired_amount = 4                     -- Example: only 4 at a time
+    local desired_item = task and task.item_name or "minecraft:iron_ingot"
+    local desired_amount = task and task.amount or 4
+
+    print("Item: " .. desired_item .. "  Amount: " .. desired_amount)
 
     -- Helper to find item slot in chest
     local function find_item_slot(side, name)
@@ -79,6 +81,10 @@ function Courier:execute()
     robot.turnLeft()
 
     print("Courier job done.")
+
+    -- Example stub:
+    print("Simulated pickup & drop for: " .. desired_item)
 end
+
 
 return Courier
