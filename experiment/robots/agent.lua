@@ -21,14 +21,16 @@ function Agent:run()
                 local courier_job = Courier:new()
                 courier_job:execute(task)
             end
-
             self.network:report_done(task.id or "unknown")
+            os.sleep(3) -- ✅ Short pause to ensure done mark saves
         else
             print("No tasks, waiting...")
+            os.sleep(5)
         end
         os.sleep(5) -- ✅ Always sleep 5s before next loop
     end
 end
+
 
 
 return Agent
