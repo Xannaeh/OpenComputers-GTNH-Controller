@@ -1,5 +1,5 @@
 -- pathfinder.lua
--- Improved pathfinder with robust sidestep + position update
+-- Robust pathfinder with smart sidestep + dynamic realignment
 
 local robot = require("robot")
 local fs = require("filesystem")
@@ -18,7 +18,6 @@ function Pathfinder:new(agent, task_id)
     local f = io.open(obj.log_file, "w")
     f:write("📍 Pathfinder Debug Log for Task ", tostring(task_id), "\n")
     f:close()
-
     return obj
 end
 
@@ -113,28 +112,24 @@ end
 function Pathfinder:adjust_stop_before(target)
     local adjust = { x = target.x, y = target.y, z = target.z }
     if self.agent.pos.x == target.x then
-        if target.z > self.agent.pos.z then adjust.z = adjust.z - 1
-        else adjust.z = adjust.z + 1 end
+        if target.z > self.agent.pos.z then adjust.z = adjust.z - 1 else adjust.z = adjust.z + 1 end
     elseif self.agent.pos.z == target.z then
-        if target.x > self.agent.pos.x then adjust.x = adjust.x - 1
-        else adjust.x = adjust.x + 1 end
+        if target.x > self.agent.pos.x then adjust.x = adjust.x - 1 else adjust.x = adjust.x + 1 end
     end
     self:log("✅ Stop adjusted: x="..adjust.x.." z="..adjust.z)
     return adjust
 end
 
 function Pathfinder:go_to(target)
-    if not target then error("nil target") end
-
     self:log("🚩 Path: Start x="..self.agent.pos.x.." z="..self.agent.pos.z.." ➜ Target x="..target.x.." z="..target.z)
 
+    local max_attempts = 10
     local attempts = 0
-    local max_attempts = 200
 
     while true do
         attempts = attempts + 1
         if attempts > max_attempts then
-            self:log("❌ Stuck! Max attempts reached.")
+            self:log("❌ Too many attempts, aborting.")
             break
         end
 
@@ -142,13 +137,11 @@ function Pathfinder:go_to(target)
         local dz = target.z - self.agent.pos.z
         local dist = math.abs(dx) + math.abs(dz)
 
-        -- 📏 If close enough (1 block)
         if dist <= 1 then
-            self:log("✅ Close enough to target. Stopping.")
+            self:log("✅ Close enough to target, stopping.")
             break
         end
 
-        -- Pick axis with more distance first
         if math.abs(dx) >= math.abs(dz) then
             if dx > 0 then self:turn_to("east") else self:turn_to("west") end
         else
@@ -156,12 +149,11 @@ function Pathfinder:go_to(target)
         end
 
         if not self:step_forward() then
-            self:log("⛔ Path blocked → try next loop iteration")
+            self:log("⚠️ Obstacle → loop to recalc")
         end
     end
 
-    self:log("✅ Arrived: x="..self.agent.pos.x.." z="..self.agent.pos.z)
+    self:log(string.format("✅ Arrived: x=%s z=%s", self.agent.pos.x, self.agent.pos.z))
 end
-
 
 return Pathfinder

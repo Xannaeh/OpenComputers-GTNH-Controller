@@ -1,5 +1,5 @@
 -- courier.lua
--- Courier job with safe stop-one-before, improved debug
+-- Courier job: stops before chest, calls new Pathfinder
 
 local component = require("component")
 local robot = require("robot")
@@ -44,13 +44,8 @@ function Courier:execute(task)
 
     local pf = Pathfinder:new(self.agent, tostring(task.id or "debug"))
 
-    local origin = { x = task.origin.x, y = task.origin.y, z = task.origin.z }
-    local dest   = { x = task.destination.x, y = task.destination.y, z = task.destination.z }
-
-    -- Adjust: stop 1 block before target chest
-    pf:log("⚙️  Adjusting path to stop one before chest.")
-    origin = pf:adjust_stop_before(origin)
-    dest   = pf:adjust_stop_before(dest)
+    local origin = pf:adjust_stop_before(task.origin)
+    local dest   = pf:adjust_stop_before(task.destination)
 
     pf:go_to(origin)
 
@@ -60,7 +55,7 @@ function Courier:execute(task)
         if ic.suckFromSlot(sides.front, slot, to_suck) then
             print("✅ Picked up "..to_suck)
         else
-            print("⚠️ Failed to pick up.")
+            print("⚠️ Pickup failed.")
         end
     else
         print("❌ Nothing picked up.")
