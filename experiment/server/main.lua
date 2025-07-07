@@ -19,16 +19,6 @@ print("Server dispatcher running. Listening on port " .. PORT)
 
 local dispatcher = Dispatcher:new()
 
--- Add a test task if none exist
-if #dispatcher.tasks_registry:list() == 0 then
-    dispatcher:add_task({
-        id = tostring(math.floor(computer.uptime() * 1000)),
-        type = "courier",
-        item_name = "minecraft:iron_ingot",
-        amount = 4
-    })
-end
-
 while true do
     local _, _, from, port, _, message = event.pull("modem_message")
 
