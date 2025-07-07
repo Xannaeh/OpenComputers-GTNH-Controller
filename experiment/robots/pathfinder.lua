@@ -24,36 +24,50 @@ function Pathfinder:turn_to(direction)
 end
 
 function Pathfinder:go_to(target)
-    print("\n🔍 [Pathfinder] --- GO_TO DEBUG ---")
-    print("TARGET: ", target and ("x="..tostring(target.x).." z="..tostring(target.z)) or "NIL")
-    print("AGENT POS: ", self.agent.pos and ("x="..tostring(self.agent.pos.x).." z="..tostring(self.agent.pos.z)) or "NIL")
-    print("-------------------------------")
-
     if not target then
         error("Pathfinder:go_to() called with nil target")
     end
 
+    print("\n🔍 [Pathfinder] --- GO_TO DEBUG ---")
+    print("TARGET:  x="..target.x.." z="..target.z)
+    print("AGENT POS:  x="..self.agent.pos.x.." z="..self.agent.pos.z)
+    print("-------------------------------")
+
     local dx = target.x - self.agent.pos.x
     local dz = target.z - self.agent.pos.z
 
-    print("Δx:", dx, "Δz:", dz)
+    -- Subtract 1 block to stop **in front**
+    if dx ~= 0 then
+        if dx > 0 then
+            dx = dx - 1  -- approach from west
+        else
+            dx = dx + 1  -- approach from east
+        end
+    elseif dz ~= 0 then
+        if dz > 0 then
+            dz = dz - 1  -- approach from north
+        else
+            dz = dz + 1  -- approach from south
+        end
+    end
 
-    -- X movement
+    -- Move X
     if dx ~= 0 then
         if dx > 0 then self:turn_to("east") else self:turn_to("west") end
         for i = 1, math.abs(dx) do robot.forward() end
+        self.agent.pos.x = self.agent.pos.x + dx
     end
-    self.agent.pos.x = target.x
 
-    -- Z movement
+    -- Move Z
     if dz ~= 0 then
         if dz > 0 then self:turn_to("south") else self:turn_to("north") end
         for i = 1, math.abs(dz) do robot.forward() end
+        self.agent.pos.z = self.agent.pos.z + dz
     end
-    self.agent.pos.z = target.z
 
     print("✅ [Pathfinder] Arrived at: x="..self.agent.pos.x.." z="..self.agent.pos.z)
 end
+
 
 
 return Pathfinder

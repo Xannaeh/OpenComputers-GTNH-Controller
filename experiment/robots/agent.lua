@@ -6,8 +6,9 @@ local Agent = {}
 function Agent:new(network)
     local obj = {
         network = network,
-        pos = { x = 32, y = 5, z = 0 },  -- 📌 your known base world position
-        facing = "south"                 -- 📌 your known base facing
+        pos = { x = 32, y = 5, z = 0 },
+        facing = "south",
+        home = { x = 32, y = 5, z = 0 }  -- ✅ base world coords
     }
     setmetatable(obj, self)
     self.__index = self

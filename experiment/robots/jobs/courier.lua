@@ -76,7 +76,7 @@ function Courier:execute(task)
 
     -- === RETURN TO BASE ===
     print("\n📌 GOING HOME:", self.agent.pos and ("x="..tostring(self.agent.pos.x).." z="..tostring(self.agent.pos.z)) or "NIL")
-    pf:go_to(self.agent.pos) -- back to Agent's current base
+    pf:go_to(self.agent.home)
 
     print("✅ Courier job done.")
 end
