@@ -20,27 +20,32 @@ end
 function TasksRegistry:load()
     print("🔍 TasksRegistry:load() starting...")
     if fs.exists(TASKS_FILE) then
-        print("📂 Found tasks.lua at: " .. TASKS_FILE)
         local file = io.open(TASKS_FILE, "r")
         local data = file:read("*a")
         file:close()
+        print("📂 Found tasks.lua at:", TASKS_FILE)
+        print("📄 Raw file content:\n" .. data)
 
-        print("📑 Raw file content:")
-        print(data)
-
-        local ok, parsed = pcall(load(data))
-        if ok and parsed then
-            self.tasks = parsed()
-            print("✅ Parsed tasks.lua successfully! Tasks loaded: " .. tostring(#self.tasks))
+        local ok, chunk = pcall(load(data))
+        if ok and chunk then
+            local ok2, parsed = pcall(chunk)
+            if ok2 then
+                self.tasks = parsed
+                print("✅ Parsed OK. Tasks loaded: " .. tostring(#self.tasks))
+            else
+                print("❌ Chunk run failed: " .. tostring(parsed))
+                self.tasks = {}
+            end
         else
-            print("❌ Failed to parse tasks.lua: " .. tostring(parsed))
+            print("❌ Load() failed: " .. tostring(chunk))
             self.tasks = {}
         end
     else
-        print("⚠️ No tasks.lua found at: " .. TASKS_FILE)
+        print("⚠️ tasks.lua does not exist, starting with empty list.")
         self.tasks = {}
     end
 end
+
 
 
 function TasksRegistry:save()
