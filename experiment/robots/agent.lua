@@ -8,8 +8,8 @@ local Agent = {}
 function Agent:new(network)
     local obj = { network = network }
 
-    -- Always define a base home
     obj.home = { x = 32, y = 5, z = 0 }
+    obj.facing = "south"
 
     if fs.exists("/experiment/data/robot_state.lua") then
         print("🗂️ Found saved robot_state.lua, loading...")
@@ -23,17 +23,17 @@ function Agent:new(network)
                         obj.pos.x, obj.pos.y, obj.pos.z, obj.facing))
             else
                 print("⚠️ Loaded chunk but no data. Using defaults.")
-                obj.pos = { x = 32, y = 5, z = 0 }
+                obj.pos = obj.home
                 obj.facing = "south"
             end
         else
             print("⚠️ Failed to load robot_state chunk. Using defaults.")
-            obj.pos = { x = 32, y = 5, z = 0 }
+            obj.pos = obj.home
             obj.facing = "south"
         end
     else
         print("ℹ️ No robot_state.lua found. Using defaults.")
-        obj.pos = { x = 32, y = 5, z = 0 }
+        obj.pos = obj.home
         obj.facing = "south"
     end
 

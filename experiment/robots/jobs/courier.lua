@@ -1,5 +1,5 @@
 -- courier.lua
--- Courier Job with path debug logging
+-- Courier job with safe stop-one-before, improved debug
 
 local component = require("component")
 local robot = require("robot")
@@ -23,72 +23,58 @@ end
 
 local function find_item_slot(side, name)
     print(string.format("🔍 find_item_slot() called: side=%s name=%s", tostring(side), tostring(name)))
-
     local size = ic.getInventorySize(side)
     if not size then
-        print("⚠️ No chest detected: getInventorySize() returned nil.")
+        print("⚠️ Chest not found.")
         return nil, 0
     end
 
-    print(string.format("📦 Chest inventory size: %s", tostring(size)))
     for slot = 1, size do
         local stack = ic.getStackInSlot(side, slot)
-        if stack then
-            print(string.format("  🔢 Slot %d: %s x%s", slot, stack.name, stack.size))
-            if stack.name == name then
-                return slot, stack.size
-            end
+        if stack and stack.name == name then
+            print(string.format("✅ Found %s in slot %d (amount %d)", name, slot, stack.size))
+            return slot, stack.size
         end
     end
-
-    print("❌ Item not found in chest.")
     return nil, 0
 end
 
 function Courier:execute(task)
-    print("📦 Courier started\nItem: "..task.item_name.."  Amount: "..task.amount)
+    print("📦 Courier started: "..task.item_name.." x"..task.amount)
 
     local pf = Pathfinder:new(self.agent, tostring(task.id or "debug"))
 
-    -- === ORIGIN ===
-    local origin = {
-        x = tonumber(task.origin.x), y = tonumber(task.origin.y), z = tonumber(task.origin.z)
-    }
-    print(string.format("📌 GOING TO ORIGIN: x=%s z=%s", origin.x, origin.z))
+    local origin = { x = task.origin.x, y = task.origin.y, z = task.origin.z }
+    local dest   = { x = task.destination.x, y = task.destination.y, z = task.destination.z }
+
+    -- Adjust: stop 1 block before target chest
+    pf:log("⚙️  Adjusting path to stop one before chest.")
+    origin = pf:adjust_stop_before(origin)
+    dest   = pf:adjust_stop_before(dest)
+
     pf:go_to(origin)
 
-    local pickup_side = sides.front
-    local slot, available = find_item_slot(pickup_side, task.item_name)
-
+    local slot, available = find_item_slot(sides.front, task.item_name)
     if slot then
         local to_suck = math.min(available, task.amount)
-        if ic.suckFromSlot(pickup_side, slot, to_suck) then
-            print("✅ Picked up "..to_suck.." of "..task.item_name)
+        if ic.suckFromSlot(sides.front, slot, to_suck) then
+            print("✅ Picked up "..to_suck)
         else
-            print("⚠️ Couldn’t pick up items.")
+            print("⚠️ Failed to pick up.")
         end
     else
-        print("❌ Nothing picked up: item not found or chest missing.")
+        print("❌ Nothing picked up.")
     end
 
-    -- === DEST ===
-    local destination = {
-        x = tonumber(task.destination.x), y = tonumber(task.destination.y), z = tonumber(task.destination.z)
-    }
-    print(string.format("📌 GOING TO DESTINATION: x=%s z=%s", destination.x, destination.z))
-    pf:go_to(destination)
+    pf:go_to(dest)
 
     if robot.drop(task.amount) then
-        print("✅ Dropped "..task.amount)
+        print("✅ Dropped.")
     else
         print("⚠️ Drop failed.")
     end
 
-    -- === HOME ===
-    local home = self.agent.home
-    print(string.format("📌 GOING HOME: x=%s z=%s", home.x, home.z))
-    pf:go_to(home)
-
+    pf:go_to(self.agent.home)
     print("✅ Courier done.")
 end
 
