@@ -1,5 +1,5 @@
 -- pathfinder.lua
--- Adds obstacle avoidance & persists robot position
+-- Adds sidestep with return to lane + persistent state
 
 local robot = require("robot")
 local serialization = require("serialization")
@@ -32,34 +32,103 @@ function Pathfinder:turn_to(direction)
 end
 
 function Pathfinder:step_forward()
-    if not robot.detect() then
-        if robot.forward() then return true end
-    end
-
-    print("⚠️ Block ahead: sidestepping...")
-
-    robot.turnLeft()
+    -- Try normal forward
     if not robot.detect() then
         if robot.forward() then
+            self:update_position()
+            return true
+        end
+    end
+
+    print("⚠️ Block ahead: sidestepping left...")
+
+    -- Sidestep left
+    robot.turnLeft()
+    local left_dir = self:next_facing("left")
+    if not robot.detect() then
+        if robot.forward() then
+            self:update_position(left_dir)
             robot.turnRight()
-            print("✅ Sidestepped left")
-            return true
+            if not robot.detect() then
+                if robot.forward() then
+                    self:update_position()
+                    robot.turnRight()
+                    if robot.forward() then
+                        self:update_position(left_dir == "west" and "east" or "west")
+                        robot.turnLeft()
+                        print("✅ Sidestepped left around and back on lane")
+                        return true
+                    end
+                end
+            end
+            -- Failed, undo
+            robot.turnLeft()
+            robot.back()
+            self:update_position(left_dir, -1)
+            robot.turnRight()
         end
     end
     robot.turnRight()
 
+    print("⚠️ Sidestepping right...")
+    -- Sidestep right
     robot.turnRight()
+    local right_dir = self:next_facing("right")
     if not robot.detect() then
         if robot.forward() then
+            self:update_position(right_dir)
             robot.turnLeft()
-            print("✅ Sidestepped right")
-            return true
+            if not robot.detect() then
+                if robot.forward() then
+                    self:update_position()
+                    robot.turnLeft()
+                    if robot.forward() then
+                        self:update_position(right_dir == "east" and "west" or "east")
+                        robot.turnRight()
+                        print("✅ Sidestepped right around and back on lane")
+                        return true
+                    end
+                end
+            end
+            -- Failed, undo
+            robot.turnRight()
+            robot.back()
+            self:update_position(right_dir, -1)
+            robot.turnLeft()
         end
     end
     robot.turnLeft()
 
-    print("❌ Fully blocked, no path")
+    print("❌ Could not bypass.")
     return false
+end
+
+function Pathfinder:update_position(side_dir, factor)
+    local factor = factor or 1
+    local facing = side_dir or self.agent.facing
+    if facing == "north" then
+        self.agent.pos.z = self.agent.pos.z - factor
+    elseif facing == "south" then
+        self.agent.pos.z = self.agent.pos.z + factor
+    elseif facing == "east" then
+        self.agent.pos.x = self.agent.pos.x + factor
+    elseif facing == "west" then
+        self.agent.pos.x = self.agent.pos.x - factor
+    end
+    self:save_state()
+end
+
+function Pathfinder:next_facing(turn)
+    local order = { "north", "east", "south", "west" }
+    local idx = 0
+    for i, dir in ipairs(order) do
+        if dir == self.agent.facing then idx = i break end
+    end
+    if turn == "left" then
+        return order[(idx - 2) % 4 + 1]
+    else
+        return order[(idx) % 4 + 1]
+    end
 end
 
 function Pathfinder:step_up()
@@ -80,38 +149,25 @@ function Pathfinder:step_down()
     return false
 end
 
+
 function Pathfinder:go_to(target)
     if not target then error("Pathfinder:go_to() nil target") end
 
-    local tx, tz = tonumber(target.x), tonumber(target.z)
-    local cx, cz = tonumber(self.agent.pos.x), tonumber(self.agent.pos.z)
-
-    local dx = tx - cx
-    local dz = tz - cz
-
+    local dx = target.x - self.agent.pos.x
+    local dz = target.z - self.agent.pos.z
     print(string.format("📍 Moving to XZ: Δx=%d Δz=%d", dx, dz))
 
     if dx ~= 0 then
-        if dx > 0 then self:turn_to("east") else self:turn_to("west") end
+        self:turn_to(dx > 0 and "east" or "west")
         for i = 1, math.abs(dx) do
-            if not self:step_forward() then
-                print("⛔ Path blocked on X axis")
-                break
-            end
-            self.agent.pos.x = self.agent.pos.x + (dx > 0 and 1 or -1)
-            self:save_state()
+            if not self:step_forward() then break end
         end
     end
 
     if dz ~= 0 then
-        if dz > 0 then self:turn_to("south") else self:turn_to("north") end
+        self:turn_to(dz > 0 and "south" or "north")
         for i = 1, math.abs(dz) do
-            if not self:step_forward() then
-                print("⛔ Path blocked on Z axis")
-                break
-            end
-            self.agent.pos.z = self.agent.pos.z + (dz > 0 and 1 or -1)
-            self:save_state()
+            if not self:step_forward() then break end
         end
     end
 end

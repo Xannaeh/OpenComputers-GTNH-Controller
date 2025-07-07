@@ -1,5 +1,5 @@
 -- agent.lua
--- Loads robot state or uses defaults
+-- Loads robot state or uses defaults and sets true home
 
 local fs = require("filesystem")
 
@@ -7,6 +7,9 @@ local Agent = {}
 
 function Agent:new(network)
     local obj = { network = network }
+
+    -- Always define a base home
+    obj.home = { x = 32, y = 5, z = 0 }
 
     if fs.exists("/experiment/data/robot_state.lua") then
         print("🗂️ Found saved robot_state.lua, loading...")
@@ -19,7 +22,7 @@ function Agent:new(network)
                 print(string.format("✅ Loaded pos: x=%s y=%s z=%s facing=%s",
                         obj.pos.x, obj.pos.y, obj.pos.z, obj.facing))
             else
-                print("⚠️ Loaded chunk but no data. Using defaults.")
+                print("⚠️ Loaded chunk but empty. Using defaults.")
                 obj.pos = { x = 32, y = 5, z = 0 }
                 obj.facing = "south"
             end
