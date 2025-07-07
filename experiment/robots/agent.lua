@@ -1,15 +1,32 @@
 -- agent.lua
--- Core RobotAgent class: controls robot main behavior loop and position
+-- Loads position from state or sets defaults
+
+local fs = require("filesystem")
+local serialization = require("serialization")
 
 local Agent = {}
 
 function Agent:new(network)
-    local obj = {
-        network = network,
-        pos = { x = 32, y = 5, z = 0 },
-        facing = "south",
-        home = { x = 32, y = 5, z = 0 }  -- ✅ base world coords
-    }
+    local obj = { network = network }
+
+    if fs.exists("/experiment/data/robot_state.lua") then
+        local ok, chunk = pcall(loadfile, "/experiment/data/robot_state.lua")
+        if ok and chunk then
+            local state = chunk()
+            obj.pos = state.pos
+            obj.facing = state.facing
+            print("✅ Loaded robot state:", obj.pos.x, obj.pos.y, obj.pos.z, "facing", obj.facing)
+        else
+            print("⚠️ Failed to load robot state. Using defaults.")
+            obj.pos = { x = 32, y = 5, z = 0 }
+            obj.facing = "south"
+        end
+    else
+        obj.pos = { x = 32, y = 5, z = 0 }
+        obj.facing = "south"
+        print("ℹ️ No robot_state.lua found. Using defaults.")
+    end
+
     setmetatable(obj, self)
     self.__index = self
     return obj
