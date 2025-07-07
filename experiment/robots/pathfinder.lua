@@ -1,5 +1,5 @@
 -- pathfinder.lua
--- Modular: robust sidestep + controlled fallback rotation
+-- Final: robust fallback rotate, visited cache per leg
 
 local robot = require("robot")
 local fs = require("filesystem")
@@ -11,7 +11,8 @@ Pathfinder.__index = Pathfinder
 function Pathfinder:new(agent, task_id)
     local obj = {
         agent = agent,
-        log_file = "/experiment/data/debug_path_" .. tostring(task_id) .. ".log"
+        log_file = "/experiment/data/debug_path_" .. tostring(task_id) .. ".log",
+        visited = {}
     }
     setmetatable(obj, self)
 
@@ -70,17 +71,28 @@ function Pathfinder:update_pos_forward()
     self:save_state()
 end
 
+function Pathfinder:mark_visited()
+    local key = self.agent.pos.x .. "," .. self.agent.pos.z
+    self.visited[key] = true
+end
+
+function Pathfinder:was_visited()
+    local key = self.agent.pos.x .. "," .. self.agent.pos.z
+    return self.visited[key] == true
+end
+
 function Pathfinder:step_forward(goal)
     local dx = goal.x - self.agent.pos.x
     local dz = goal.z - self.agent.pos.z
     if math.abs(dx) + math.abs(dz) == 1 then
-        self:log("✅ Block ahead is chest → stop.")
+        self:log("✅ Chest reached → stop forward.")
         return false
     end
 
     if not robot.detect() then
         if robot.forward() then
             self:update_pos_forward()
+            self:mark_visited()
             self:log(string.format("✅ Forward → Pos: x=%s z=%s", self.agent.pos.x, self.agent.pos.z))
             return true
         end
@@ -89,65 +101,37 @@ function Pathfinder:step_forward(goal)
     return false
 end
 
-function Pathfinder:try_step_or_sidestep(goal)
+function Pathfinder:try_step_or_rotate(goal)
     if self:step_forward(goal) then return true end
 
-    -- Try sidestep left
-    robot.turnLeft()
-    if not robot.detect() then
-        if robot.forward() then
-            local f = self.agent.facing
-            if f == "north" then self.agent.pos.x = self.agent.pos.x - 1
-            elseif f == "south" then self.agent.pos.x = self.agent.pos.x + 1
-            elseif f == "east" then self.agent.pos.z = self.agent.pos.z - 1
-            elseif f == "west" then self.agent.pos.z = self.agent.pos.z + 1 end
-            self:save_state()
-            self:log("↪️ Sidestep left → "..self.agent.facing)
-            robot.turnRight()
-            return true
-        end
-    end
-    robot.turnRight()
-
-    -- Try sidestep right
-    robot.turnRight()
-    if not robot.detect() then
-        if robot.forward() then
-            local f = self.agent.facing
-            if f == "north" then self.agent.pos.x = self.agent.pos.x + 1
-            elseif f == "south" then self.agent.pos.x = self.agent.pos.x - 1
-            elseif f == "east" then self.agent.pos.z = self.agent.pos.z + 1
-            elseif f == "west" then self.agent.pos.z = self.agent.pos.z - 1 end
-            self:save_state()
-            self:log("↩️ Sidestep right → "..self.agent.facing)
-            robot.turnLeft()
-            return true
-        end
-    end
-    robot.turnLeft()
-
-    -- If still blocked → fallback rotate
     local fallback = { "north", "east", "south", "west" }
     for _, dir in ipairs(fallback) do
         self:turn_to(dir)
         if self:step_forward(goal) then return true end
     end
 
-    self:log("⛔ Blocked → no move possible.")
+    self:log("⛔ All fallback rotations blocked.")
     return false
 end
 
 function Pathfinder:try_targets(targets)
+    self.visited = {} -- fresh per leg
+
     for _, target in ipairs(targets) do
         self:log(string.format("🎯 Trying target: x=%s z=%s", target.x, target.z))
-        local max = 100
-        local step = 0
-        while step < max do
+        local max = 200
+        local steps = 0
+        while steps < max do
             local dx = target.x - self.agent.pos.x
             local dz = target.z - self.agent.pos.z
             if math.abs(dx) + math.abs(dz) <= 1 then
                 self:log(string.format("✅ Arrived: x=%s z=%s", self.agent.pos.x, self.agent.pos.z))
                 return true
+            end
+
+            if self:was_visited() then
+                self:log("🚫 Loop detected at current pos → break.")
+                break
             end
 
             if math.abs(dx) >= math.abs(dz) then
@@ -156,12 +140,13 @@ function Pathfinder:try_targets(targets)
                 if dz > 0 then self:turn_to("south") else self:turn_to("north") end
             end
 
-            if not self:try_step_or_sidestep(target) then break end
-            step = step + 1
+            if not self:try_step_or_rotate(target) then break end
+            steps = steps + 1
         end
-        self:log("❌ Could not reach target, trying next.")
+        self:log("❌ Could not reach this target, trying next.")
     end
-    self:log("🚫 All targets failed.")
+
+    self:log("🚫 All target spots failed.")
     return false
 end
 

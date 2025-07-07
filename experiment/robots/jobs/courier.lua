@@ -1,5 +1,5 @@
 -- courier.lua
--- Courier with proper multiple target tries
+-- Calls pathfinder 3x with multi-face logic
 
 local component = require("component")
 local robot = require("robot")
