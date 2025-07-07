@@ -1,5 +1,5 @@
 -- agent.lua
--- Loads robot state or uses defaults and sets true home
+-- Loads robot state or uses defaults
 
 local fs = require("filesystem")
 
@@ -22,7 +22,7 @@ function Agent:new(network)
                 print(string.format("✅ Loaded pos: x=%s y=%s z=%s facing=%s",
                         obj.pos.x, obj.pos.y, obj.pos.z, obj.facing))
             else
-                print("⚠️ Loaded chunk but empty. Using defaults.")
+                print("⚠️ Loaded chunk but no data. Using defaults.")
                 obj.pos = { x = 32, y = 5, z = 0 }
                 obj.facing = "south"
             end
