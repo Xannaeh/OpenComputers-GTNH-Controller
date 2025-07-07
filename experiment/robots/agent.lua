@@ -1,5 +1,5 @@
 -- agent.lua
--- Loads position from state or sets defaults
+-- Loads robot state or uses defaults
 
 local fs = require("filesystem")
 
@@ -38,8 +38,6 @@ function Agent:new(network)
     self.__index = self
     return obj
 end
-
-return Agent
 
 function Agent:run()
     while true do
