@@ -2,16 +2,13 @@
 -- Adds obstacle avoidance & persists robot position
 
 local robot = require("robot")
-local fs = require("filesystem")
 local serialization = require("serialization")
 
 local Pathfinder = {}
 Pathfinder.__index = Pathfinder
 
 function Pathfinder:new(agent)
-    local obj = {
-        agent = agent
-    }
+    local obj = { agent = agent }
     setmetatable(obj, self)
     return obj
 end
@@ -35,38 +32,33 @@ function Pathfinder:turn_to(direction)
 end
 
 function Pathfinder:step_forward()
-    -- Try normal forward
     if not robot.detect() then
-        if robot.forward() then
-            return true
-        end
+        if robot.forward() then return true end
     end
 
-    print("⚠️ Block detected: trying sidestep...")
+    print("⚠️ Block ahead: sidestepping...")
 
-    -- Try sidestep left
     robot.turnLeft()
     if not robot.detect() then
         if robot.forward() then
             robot.turnRight()
-            print("✅ Sidestepped left, resuming path...")
+            print("✅ Sidestepped left")
             return true
         end
     end
     robot.turnRight()
 
-    -- Try sidestep right
     robot.turnRight()
     if not robot.detect() then
         if robot.forward() then
             robot.turnLeft()
-            print("✅ Sidestepped right, resuming path...")
+            print("✅ Sidestepped right")
             return true
         end
     end
     robot.turnLeft()
 
-    print("❌ Obstacle too big to bypass.")
+    print("❌ Fully blocked, no path")
     return false
 end
 
@@ -99,7 +91,6 @@ function Pathfinder:go_to(target)
 
     print(string.format("📍 Moving to XZ: Δx=%d Δz=%d", dx, dz))
 
-    -- X axis first
     if dx ~= 0 then
         if dx > 0 then self:turn_to("east") else self:turn_to("west") end
         for i = 1, math.abs(dx) do
@@ -112,7 +103,6 @@ function Pathfinder:go_to(target)
         end
     end
 
-    -- Z axis next
     if dz ~= 0 then
         if dz > 0 then self:turn_to("south") else self:turn_to("north") end
         for i = 1, math.abs(dz) do
@@ -124,8 +114,6 @@ function Pathfinder:go_to(target)
             self:save_state()
         end
     end
-
-    -- Later: add Y movement logic if needed
 end
 
 return Pathfinder

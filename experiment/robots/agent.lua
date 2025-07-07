@@ -43,10 +43,9 @@ function Agent:run()
     while true do
         local task = self.network:request_task()
         if task then
-            -- Example: dynamic job load
             if task.type == "courier" then
                 local Courier = require("jobs.courier")
-                local courier_job = Courier:new(self) -- pass Agent self
+                local courier_job = Courier:new(self)
                 courier_job:execute(task)
             end
             self.network:report_done(task.id or "unknown")
