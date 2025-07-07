@@ -1,5 +1,5 @@
 -- pathfinder.lua
--- Final: robust fallback rotate, visited cache per leg
+-- Robust: avoid revisiting blocks, rotate fallback, always pick best next
 
 local robot = require("robot")
 local fs = require("filesystem")
@@ -49,104 +49,111 @@ function Pathfinder:turn_to(direction)
     end
 end
 
-function Pathfinder:face_target_block(target)
-    local dx = target.x - self.agent.pos.x
-    local dz = target.z - self.agent.pos.z
-
-    if math.abs(dx) > math.abs(dz) then
-        if dx > 0 then self:turn_to("east") else self:turn_to("west") end
-    else
-        if dz > 0 then self:turn_to("south") else self:turn_to("north") end
-    end
-
-    self:log(string.format("🎯 Facing block: dx=%s dz=%s → %s", dx, dz, self.agent.facing))
-end
-
-function Pathfinder:update_pos_forward()
-    local f = self.agent.facing
-    if f == "north" then self.agent.pos.z = self.agent.pos.z - 1
-    elseif f == "south" then self.agent.pos.z = self.agent.pos.z + 1
-    elseif f == "east" then self.agent.pos.x = self.agent.pos.x + 1
-    elseif f == "west" then self.agent.pos.x = self.agent.pos.x - 1 end
-    self:save_state()
-end
-
-function Pathfinder:mark_visited()
-    local key = self.agent.pos.x .. "," .. self.agent.pos.z
+function Pathfinder:mark_visited(x, z)
+    local key = x .. "," .. z
     self.visited[key] = true
 end
 
-function Pathfinder:was_visited()
-    local key = self.agent.pos.x .. "," .. self.agent.pos.z
+function Pathfinder:is_visited(x, z)
+    local key = x .. "," .. z
     return self.visited[key] == true
 end
 
+function Pathfinder:next_pos(facing)
+    local x, z = self.agent.pos.x, self.agent.pos.z
+    if facing == "north" then z = z - 1
+    elseif facing == "south" then z = z + 1
+    elseif facing == "east" then x = x + 1
+    elseif facing == "west" then x = x - 1 end
+    return x, z
+end
+
 function Pathfinder:step_forward(goal)
-    local dx = goal.x - self.agent.pos.x
-    local dz = goal.z - self.agent.pos.z
-    if math.abs(dx) + math.abs(dz) == 1 then
-        self:log("✅ Chest reached → stop forward.")
+    -- check: if the next block IS the chest, do NOT try to enter it
+    local nx, nz = self:next_pos(self.agent.facing)
+    local dist = math.abs(goal.x - nx) + math.abs(goal.z - nz)
+    if dist == 0 then
+        self:log("✅ Goal block reached → do not step in.")
         return false
     end
 
-    if not robot.detect() then
-        if robot.forward() then
-            self:update_pos_forward()
-            self:mark_visited()
-            self:log(string.format("✅ Forward → Pos: x=%s z=%s", self.agent.pos.x, self.agent.pos.z))
-            return true
-        end
+    -- check visited
+    if self:is_visited(nx, nz) then
+        self:log(string.format("🚫 Would revisit x=%s z=%s → skip.", nx, nz))
+        return false
     end
 
-    return false
-end
-
-function Pathfinder:try_step_or_rotate(goal)
-    if self:step_forward(goal) then return true end
-
-    local fallback = { "north", "east", "south", "west" }
-    for _, dir in ipairs(fallback) do
-        self:turn_to(dir)
-        if self:step_forward(goal) then return true end
+    -- detect obstacle
+    if robot.detect() then
+        self:log(string.format("⛔ Block detected at next x=%s z=%s → mark visited.", nx, nz))
+        self:mark_visited(nx, nz)
+        return false
     end
 
-    self:log("⛔ All fallback rotations blocked.")
+    if robot.forward() then
+        self.agent.pos.x, self.agent.pos.z = nx, nz
+        self:save_state()
+        self:mark_visited(nx, nz)
+        self:log(string.format("✅ Forward → Pos: x=%s z=%s", nx, nz))
+        return true
+    end
+
     return false
 end
 
 function Pathfinder:try_targets(targets)
-    self.visited = {} -- fresh per leg
+    self.visited = {} -- clear visited for this trip
 
     for _, target in ipairs(targets) do
         self:log(string.format("🎯 Trying target: x=%s z=%s", target.x, target.z))
-        local max = 200
+        local max_steps = 300
         local steps = 0
-        while steps < max do
+
+        while steps < max_steps do
             local dx = target.x - self.agent.pos.x
             local dz = target.z - self.agent.pos.z
             if math.abs(dx) + math.abs(dz) <= 1 then
-                self:log(string.format("✅ Arrived: x=%s z=%s", self.agent.pos.x, self.agent.pos.z))
+                self:log(string.format("✅ Arrived near target: x=%s z=%s", self.agent.pos.x, self.agent.pos.z))
                 return true
             end
 
-            if self:was_visited() then
-                self:log("🚫 Loop detected at current pos → break.")
+            -- Choose the best next facing: North/East/South/West, preferring one that gets closer
+            local dirs = {
+                { dir = "north", x = self.agent.pos.x, z = self.agent.pos.z - 1 },
+                { dir = "east",  x = self.agent.pos.x + 1, z = self.agent.pos.z },
+                { dir = "south", x = self.agent.pos.x, z = self.agent.pos.z + 1 },
+                { dir = "west",  x = self.agent.pos.x - 1, z = self.agent.pos.z }
+            }
+
+            table.sort(dirs, function(a, b)
+                local da = math.abs(target.x - a.x) + math.abs(target.z - a.z)
+                local db = math.abs(target.x - b.x) + math.abs(target.z - b.z)
+                return da < db
+            end)
+
+            local moved = false
+            for _, opt in ipairs(dirs) do
+                if not self:is_visited(opt.x, opt.z) then
+                    self:turn_to(opt.dir)
+                    if self:step_forward(target) then
+                        moved = true
+                        break
+                    end
+                end
+            end
+
+            if not moved then
+                self:log("⛔ All next directions blocked or visited → stuck.")
                 break
             end
 
-            if math.abs(dx) >= math.abs(dz) then
-                if dx > 0 then self:turn_to("east") else self:turn_to("west") end
-            else
-                if dz > 0 then self:turn_to("south") else self:turn_to("north") end
-            end
-
-            if not self:try_step_or_rotate(target) then break end
             steps = steps + 1
         end
-        self:log("❌ Could not reach this target, trying next.")
+
+        self:log("❌ Could not reach target, trying next.")
     end
 
-    self:log("🚫 All target spots failed.")
+    self:log("🚫 All targets failed.")
     return false
 end
 
