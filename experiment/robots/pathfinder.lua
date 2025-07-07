@@ -1,5 +1,5 @@
 -- pathfinder.lua
--- Robust sidestep + position update, correct stop-before for pickup only
+-- Final version: dynamic face_target_block, robust sidestep + position update
 
 local robot = require("robot")
 local fs = require("filesystem")
@@ -48,15 +48,18 @@ function Pathfinder:turn_to(direction)
     end
 end
 
-function Pathfinder:face_target(target)
-    -- Face the target to align robot front
+function Pathfinder:face_target_block(target)
     local dx = target.x - self.agent.pos.x
     local dz = target.z - self.agent.pos.z
+
     if math.abs(dx) > math.abs(dz) then
         if dx > 0 then self:turn_to("east") else self:turn_to("west") end
     else
         if dz > 0 then self:turn_to("south") else self:turn_to("north") end
     end
+
+    self:log(string.format("🎯 Facing block: dx=%s dz=%s → now %s",
+            dx, dz, self.agent.facing))
 end
 
 function Pathfinder:update_pos_forward()
@@ -121,18 +124,16 @@ function Pathfinder:step_forward()
     return false
 end
 
-function Pathfinder:adjust_stop_before(target, mode)
+function Pathfinder:adjust_stop_before(target)
     local adjust = { x = target.x, y = target.y, z = target.z }
-    if mode == "pickup" then
-        if self.agent.pos.x == target.x then
-            if target.z > self.agent.pos.z then adjust.z = adjust.z - 1
-            else adjust.z = adjust.z + 1 end
-        elseif self.agent.pos.z == target.z then
-            if target.x > self.agent.pos.x then adjust.x = adjust.x - 1
-            else adjust.x = adjust.x + 1 end
-        end
+    if self.agent.pos.x == target.x then
+        if target.z > self.agent.pos.z then adjust.z = adjust.z - 1
+        else adjust.z = adjust.z + 1 end
+    elseif self.agent.pos.z == target.z then
+        if target.x > self.agent.pos.x then adjust.x = adjust.x - 1
+        else adjust.x = adjust.x + 1 end
     end
-    self:log("✅ Stop adjusted ("..mode.."): x="..adjust.x.." z="..adjust.z)
+    self:log("✅ Stop adjusted: x="..adjust.x.." z="..adjust.z)
     return adjust
 end
 
@@ -140,14 +141,22 @@ function Pathfinder:go_to(target)
     if not target then error("Pathfinder: nil target") end
     self:log("🚩 Path: Start x="..self.agent.pos.x.." z="..self.agent.pos.z.." ➜ Target x="..target.x.." z="..target.z)
 
-    local stuck = 0
+    local max_attempts = 50
+    local attempts = 0
+
     while true do
+        attempts = attempts + 1
+        if attempts > max_attempts then
+            self:log("❌ Too many attempts, aborting.")
+            break
+        end
+
         local dx = target.x - self.agent.pos.x
         local dz = target.z - self.agent.pos.z
         local dist = math.abs(dx) + math.abs(dz)
 
-        if dist <= 0 then
-            self:log("✅ Arrived at exact target.")
+        if dist <= 1 then
+            self:log("✅ Close enough to target, stopping.")
             break
         end
 
@@ -157,18 +166,12 @@ function Pathfinder:go_to(target)
             if dz > 0 then self:turn_to("south") else self:turn_to("north") end
         end
 
-        if self:step_forward() then
-            stuck = 0
-        else
-            stuck = stuck + 1
-            if stuck >= 5 then
-                self:log("⛔ Stuck! Giving up.")
-                break
-            end
+        if not self:step_forward() then
+            self:log("⚠️ Obstacle → try next loop")
         end
     end
 
-    self:log(string.format("✅ Final Pos: x=%s z=%s", self.agent.pos.x, self.agent.pos.z))
+    self:log(string.format("✅ Arrived: x=%s z=%s", self.agent.pos.x, self.agent.pos.z))
 end
 
 return Pathfinder
