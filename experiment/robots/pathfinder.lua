@@ -32,10 +32,12 @@ function Pathfinder:go_to(target)
         error("Pathfinder:go_to() called with nil target")
     end
 
+    print("🔍 go_to called with:", target.x, target.z)
+    print("🔍 current pos:", self.pos.x, self.pos.z)
+
     local dx = target.x - self.pos.x
     local dz = target.z - self.pos.z
 
-    -- Move X
     if dx ~= 0 then
         if dx > 0 then
             self:turn_to("east")
@@ -45,10 +47,9 @@ function Pathfinder:go_to(target)
         for i = 1, math.abs(dx) do
             robot.forward()
         end
-        self.pos.x = target.x
     end
+    self.pos.x = target.x
 
-    -- Move Z
     if dz ~= 0 then
         if dz > 0 then
             self:turn_to("south")
@@ -58,8 +59,8 @@ function Pathfinder:go_to(target)
         for i = 1, math.abs(dz) do
             robot.forward()
         end
-        self.pos.z = target.z
     end
+    self.pos.z = target.z
 
     -- TODO: handle Y later
 end

@@ -49,6 +49,9 @@ function Courier:execute(task)
     -- Go to origin chest (real world)
     pf:go_to(task.origin)
 
+    print("✅ After go_to origin: pos=", pf.pos.x, pf.pos.z)
+    print("✅ After go_to destination: pos=", pf.pos.x, pf.pos.z)
+
     local pickup_side = sides.front
     local slot, available = find_item_slot(pickup_side, desired_item)
 
@@ -65,6 +68,9 @@ function Courier:execute(task)
 
     -- Go to destination chest (real world)
     pf:go_to(task.destination)
+
+    print("✅ After go_to origin: pos=", pf.pos.x, pf.pos.z)
+    print("✅ After go_to destination: pos=", pf.pos.x, pf.pos.z)
 
     if robot.drop(desired_amount) then
         print("✅ Dropped " .. desired_amount .. " of " .. desired_item)
