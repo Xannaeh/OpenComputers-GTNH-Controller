@@ -26,13 +26,25 @@ end
 
 -- Helper: find an item slot in the chest
 local function find_item_slot(side, name)
+    print(string.format("🔍 find_item_slot() called: side=%s name=%s", tostring(side), tostring(name)))
+
     local size = ic.getInventorySize(side)
+    print(string.format("📦 Chest inventory size: %s", tostring(size)))
+
     for slot = 1, size do
         local stack = ic.getStackInSlot(side, slot)
-        if stack and stack.name == name then
-            return slot, stack.size
+        if stack then
+            print(string.format("  🔢 Slot %d: %s x%s", slot, tostring(stack.name), tostring(stack.size)))
+            if stack.name == name then
+                print(string.format("✅ Found matching slot: %d (has %d)", slot, stack.size))
+                return slot, stack.size
+            end
+        else
+            print(string.format("  🔢 Slot %d: empty", slot))
         end
     end
+
+    print("❌ Item not found in any slot.")
     return nil, 0
 end
 
