@@ -1,12 +1,11 @@
 -- courier.lua
--- Courier: multi A/B target + face chest
+-- Courier with proper multiple target tries
 
 local component = require("component")
 local robot = require("robot")
 local sides = require("sides")
 
 local ic = component.inventory_controller
-
 local Job = require("job")
 local Pathfinder = require("pathfinder")
 
@@ -22,17 +21,13 @@ function Courier:new(agent)
 end
 
 local function find_item_slot(side, name)
-    print(string.format("🔍 find_item_slot() called: side=%s name=%s", tostring(side), tostring(name)))
+    print(string.format("🔍 Checking chest for: %s", name))
     local size = ic.getInventorySize(side)
-    if not size then
-        print("⚠️ Chest not found.")
-        return nil, 0
-    end
+    if not size then print("⚠️ Chest not found."); return nil, 0 end
 
     for slot = 1, size do
         local stack = ic.getStackInSlot(side, slot)
         if stack and stack.name == name then
-            print(string.format("✅ Found %s in slot %d (amount %d)", name, slot, stack.size))
             return slot, stack.size
         end
     end
@@ -40,38 +35,35 @@ local function find_item_slot(side, name)
 end
 
 function Courier:execute(task)
-    print("📦 Courier started: " .. task.item_name .. " x" .. task.amount)
-
     local pf = Pathfinder:new(self.agent, tostring(task.id or "debug"))
+    local origin = task.origin
+    local destination = task.destination
 
-    local origin = { x = task.origin.x, y = task.origin.y, z = task.origin.z }
-    local dest = { x = task.destination.x, y = task.destination.y, z = task.destination.z }
+    local origin_spots = {
+        { x = origin.x, y = origin.y, z = origin.z - 1 },
+        { x = origin.x - 1, y = origin.y, z = origin.z },
+        { x = origin.x, y = origin.y, z = origin.z + 1 },
+        { x = origin.x + 1, y = origin.y, z = origin.z }
+    }
+    local dest_spots = {
+        { x = destination.x, y = destination.y, z = destination.z - 1 },
+        { x = destination.x - 1, y = destination.y, z = destination.z },
+        { x = destination.x, y = destination.y, z = destination.z + 1 },
+        { x = destination.x + 1, y = destination.y, z = destination.z }
+    }
 
-    pf:go_to(origin)
-    pf:face_target_block(task.origin)
+    pf:try_targets(origin_spots)
+    pf:face_target_block(origin)
 
-    local slot, available = find_item_slot(sides.front, task.item_name)
-    if slot then
-        local to_suck = math.min(available, task.amount)
-        if ic.suckFromSlot(sides.front, slot, to_suck) then
-            print("✅ Picked up " .. to_suck)
-        else
-            print("⚠️ Failed to pick up.")
-        end
-    else
-        print("❌ Nothing picked up.")
-    end
+    local slot, amount = find_item_slot(sides.front, task.item_name)
+    if slot then ic.suckFromSlot(sides.front, slot, math.min(amount, task.amount)) end
 
-    pf:go_to(dest)
-    pf:face_target_block(task.destination)
+    pf:try_targets(dest_spots)
+    pf:face_target_block(destination)
 
-    if robot.drop(task.amount) then
-        print("✅ Dropped.")
-    else
-        print("⚠️ Drop failed.")
-    end
+    robot.drop(task.amount)
 
-    pf:go_to(self.agent.home)
+    pf:try_targets({ self.agent.home })
     print("✅ Courier done.")
 end
 
