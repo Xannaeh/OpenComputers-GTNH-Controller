@@ -13,8 +13,11 @@ function Dispatcher:new()
     self.__index = self
 
     obj.tasks_registry = TasksRegistry:new()
+
+    print("✅ Dispatcher initialized. Current tasks count: " .. tostring(#obj.tasks_registry:list()))
     return obj
 end
+
 
 function Dispatcher:add_task(task)
     self.tasks_registry:add(task)
