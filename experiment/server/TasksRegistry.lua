@@ -28,7 +28,7 @@ function TasksRegistry:load()
         print("📑 Raw file content:")
         print(data)
 
-        local ok, parsed = pcall(load("return " .. data))
+        local ok, parsed = pcall(load(data))
         if ok and parsed then
             self.tasks = parsed()
             print("✅ Parsed tasks.lua successfully! Tasks loaded: " .. tostring(#self.tasks))
