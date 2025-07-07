@@ -47,6 +47,7 @@ function Courier:execute(task)
     local pf = Pathfinder:new(self.agent)
 
     -- === GO TO ORIGIN ===
+    print("\n📌 GOING TO ORIGIN:", task.origin and ("x="..tostring(task.origin.x).." z="..tostring(task.origin.z)) or "NIL")
     pf:go_to(task.origin)
 
     local pickup_side = sides.front
@@ -64,6 +65,7 @@ function Courier:execute(task)
     end
 
     -- === GO TO DESTINATION ===
+    print("\n📌 GOING TO DESTINATION:", task.destination and ("x="..tostring(task.destination.x).." z="..tostring(task.destination.z)) or "NIL")
     pf:go_to(task.destination)
 
     if robot.drop(desired_amount) then
@@ -73,6 +75,7 @@ function Courier:execute(task)
     end
 
     -- === RETURN TO BASE ===
+    print("\n📌 GOING HOME:", self.agent.pos and ("x="..tostring(self.agent.pos.x).." z="..tostring(self.agent.pos.z)) or "NIL")
     pf:go_to(self.agent.pos) -- back to Agent's current base
 
     print("✅ Courier job done.")
