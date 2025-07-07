@@ -48,4 +48,10 @@ function Network:report_done(id)
     print("✅ Reported task done for ID: " .. id)
 end
 
+function Network:send_update_map(map)
+    self.modem.broadcast(self.PORT, "UPDATE_MAP:" .. serialization.serialize(map))
+    print("✅ Sent updated map to server")
+end
+
+
 return Network

@@ -38,6 +38,13 @@ while true do
             dispatcher:mark_done(id)
             print("✅ Task " .. id .. " marked done.")
             os.sleep(0.1) -- ✅ Small wait to guarantee disk flush
+
+        elseif message:find("UPDATE_MAP:") == 1 then
+            local data = message:sub(12)
+            local map = serialization.unserialize(data)
+            local registry = require("registry")
+            registry:merge_map(map)
+            print("🗺️ Merged received map.")
         end
     end
 end

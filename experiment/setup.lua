@@ -47,6 +47,7 @@ local function main()
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/robots/agent.lua /experiment/robots/agent.lua")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/robots/job.lua /experiment/robots/job.lua")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/robots/jobs/courier.lua /experiment/robots/jobs/courier.lua")
+  os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/robots/jobs/mapper.lua /experiment/robots/jobs/mapper.lua")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/robots/jobs/farmer.lua /experiment/robots/jobs/farmer.lua")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/robots/pathfinder.lua /experiment/robots/pathfinder.lua")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/robots/network.lua /experiment/robots/network.lua")
@@ -62,11 +63,10 @@ local function main()
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/utils.lua /experiment/server/utils.lua")
   os.execute("wget -f https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/server/TasksRegistry.lua /experiment/server/TasksRegistry.lua")
 
-
-
-  print("⬇️ Downloading persistent files...")
+  print("⬇️ Downloading persistent data files...")
   ensureFile("/experiment/data/tasks.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/data/tasks.lua")
   ensureFile("/experiment/data/robot_state.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/data/robot_state.lua")
+  ensureFile("/experiment/data/map.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/data/map.lua")
 
   print("\n✅ Setup complete! Run your robot with: lua /experiment/robots/main.lua")
 end

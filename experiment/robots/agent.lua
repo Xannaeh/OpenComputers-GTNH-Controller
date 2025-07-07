@@ -1,5 +1,5 @@
 -- agent.lua
--- Loads robot state or uses defaults
+-- Loads robot state or uses defaults. Supports static role config.
 
 local fs = require("filesystem")
 
@@ -10,6 +10,7 @@ function Agent:new(network)
 
     obj.home = { x = 32, y = 5, z = 0 }
     obj.facing = "south"
+    obj.role = "courier" -- default fallback
 
     if fs.exists("/experiment/data/robot_state.lua") then
         print("🗂️ Found saved robot_state.lua, loading...")
@@ -17,24 +18,24 @@ function Agent:new(network)
         if ok and chunk then
             local state = chunk()
             if state then
-                obj.pos = state.pos
-                obj.facing = state.facing
-                print(string.format("✅ Loaded pos: x=%s y=%s z=%s facing=%s",
-                        obj.pos.x, obj.pos.y, obj.pos.z, obj.facing))
+                obj.pos = state.pos or obj.home
+                obj.facing = state.facing or "south"
+                obj.role = state.role or "courier"
+                print(string.format(
+                        "✅ Loaded pos: x=%s y=%s z=%s facing=%s role=%s",
+                        obj.pos.x, obj.pos.y, obj.pos.z, obj.facing, obj.role
+                ))
             else
                 print("⚠️ Loaded chunk but no data. Using defaults.")
                 obj.pos = obj.home
-                obj.facing = "south"
             end
         else
             print("⚠️ Failed to load robot_state chunk. Using defaults.")
             obj.pos = obj.home
-            obj.facing = "south"
         end
     else
         print("ℹ️ No robot_state.lua found. Using defaults.")
         obj.pos = obj.home
-        obj.facing = "south"
     end
 
     setmetatable(obj, self)
@@ -43,10 +44,20 @@ function Agent:new(network)
 end
 
 function Agent:run()
+    print("🤖 Running as role: " .. self.role)
+
+    if self.role == "mapper" then
+        local Mapper = require("jobs.mapper")
+        local mapper_job = Mapper:new(self)
+        mapper_job:execute()
+        print("🗺️ Mapper job done.")
+        return -- Mapper only runs once for now
+    end
+
     while true do
         local task = self.network:request_task()
         if task then
-            if task.type == "courier" then
+            if task.type == "courier" and self.role == "courier" then
                 local Courier = require("jobs.courier")
                 local courier_job = Courier:new(self)
                 courier_job:execute(task)
