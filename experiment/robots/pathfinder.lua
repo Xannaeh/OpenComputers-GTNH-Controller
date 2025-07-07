@@ -1,5 +1,5 @@
 -- pathfinder.lua
--- Modular: try multiple targets, robust dodge & log + chest detection fix
+-- Modular: robust sidestep + controlled fallback rotation
 
 local robot = require("robot")
 local fs = require("filesystem")
@@ -71,11 +71,10 @@ function Pathfinder:update_pos_forward()
 end
 
 function Pathfinder:step_forward(goal)
-    -- 🟢 If the goal is ahead, and the block IS detected, stop: it's the chest!
     local dx = goal.x - self.agent.pos.x
     local dz = goal.z - self.agent.pos.z
     if math.abs(dx) + math.abs(dz) == 1 then
-        self:log("✅ Block ahead is chest, stopping here.")
+        self:log("✅ Block ahead is chest → stop.")
         return false
     end
 
@@ -87,36 +86,54 @@ function Pathfinder:step_forward(goal)
         end
     end
 
-    -- Obstacle → try sidestep
-    for _, side in ipairs({ "left", "right" }) do
-        self:log("⚠️ Block ahead → Try sidestep " .. side)
-        local turn = side == "left" and robot.turnLeft or robot.turnRight
-        local undo = side == "left" and robot.turnRight or robot.turnLeft
-        turn()
-        if not robot.detect() then
-            if robot.forward() then
-                local facing = self.agent.facing
-                if side == "left" then
-                    if facing == "north" then self.agent.pos.x = self.agent.pos.x - 1
-                    elseif facing == "south" then self.agent.pos.x = self.agent.pos.x + 1
-                    elseif facing == "east" then self.agent.pos.z = self.agent.pos.z - 1
-                    elseif facing == "west" then self.agent.pos.z = self.agent.pos.z + 1 end
-                else
-                    if facing == "north" then self.agent.pos.x = self.agent.pos.x + 1
-                    elseif facing == "south" then self.agent.pos.x = self.agent.pos.x - 1
-                    elseif facing == "east" then self.agent.pos.z = self.agent.pos.z + 1
-                    elseif facing == "west" then self.agent.pos.z = self.agent.pos.z - 1 end
-                end
-                self:save_state()
-                self:log(string.format("↪️ Sidestep %s → Pos: x=%s z=%s", side, self.agent.pos.x, self.agent.pos.z))
-                undo()
-                return true
-            end
+    return false
+end
+
+function Pathfinder:try_step_or_sidestep(goal)
+    if self:step_forward(goal) then return true end
+
+    -- Try sidestep left
+    robot.turnLeft()
+    if not robot.detect() then
+        if robot.forward() then
+            local f = self.agent.facing
+            if f == "north" then self.agent.pos.x = self.agent.pos.x - 1
+            elseif f == "south" then self.agent.pos.x = self.agent.pos.x + 1
+            elseif f == "east" then self.agent.pos.z = self.agent.pos.z - 1
+            elseif f == "west" then self.agent.pos.z = self.agent.pos.z + 1 end
+            self:save_state()
+            self:log("↪️ Sidestep left → "..self.agent.facing)
+            robot.turnRight()
+            return true
         end
-        undo()
+    end
+    robot.turnRight()
+
+    -- Try sidestep right
+    robot.turnRight()
+    if not robot.detect() then
+        if robot.forward() then
+            local f = self.agent.facing
+            if f == "north" then self.agent.pos.x = self.agent.pos.x + 1
+            elseif f == "south" then self.agent.pos.x = self.agent.pos.x - 1
+            elseif f == "east" then self.agent.pos.z = self.agent.pos.z + 1
+            elseif f == "west" then self.agent.pos.z = self.agent.pos.z - 1 end
+            self:save_state()
+            self:log("↩️ Sidestep right → "..self.agent.facing)
+            robot.turnLeft()
+            return true
+        end
+    end
+    robot.turnLeft()
+
+    -- If still blocked → fallback rotate
+    local fallback = { "north", "east", "south", "west" }
+    for _, dir in ipairs(fallback) do
+        self:turn_to(dir)
+        if self:step_forward(goal) then return true end
     end
 
-    self:log("⛔ Stuck.")
+    self:log("⛔ Blocked → no move possible.")
     return false
 end
 
@@ -129,7 +146,7 @@ function Pathfinder:try_targets(targets)
             local dx = target.x - self.agent.pos.x
             local dz = target.z - self.agent.pos.z
             if math.abs(dx) + math.abs(dz) <= 1 then
-                self:log(string.format("✅ Arrived at target: x=%s z=%s", self.agent.pos.x, self.agent.pos.z))
+                self:log(string.format("✅ Arrived: x=%s z=%s", self.agent.pos.x, self.agent.pos.z))
                 return true
             end
 
@@ -139,10 +156,10 @@ function Pathfinder:try_targets(targets)
                 if dz > 0 then self:turn_to("south") else self:turn_to("north") end
             end
 
-            if not self:step_forward(target) then break end
+            if not self:try_step_or_sidestep(target) then break end
             step = step + 1
         end
-        self:log("❌ Could not reach target, trying next option.")
+        self:log("❌ Could not reach target, trying next.")
     end
     self:log("🚫 All targets failed.")
     return false
