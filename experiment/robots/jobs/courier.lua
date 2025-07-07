@@ -1,5 +1,5 @@
 -- courier.lua
--- Courier Job: moves items between world coordinates using Pathfinder
+-- Courier Job: moves items using Pathfinder with Agent state
 
 local component = require("component")
 local robot = require("robot")
@@ -17,9 +17,10 @@ local Courier = {}
 setmetatable(Courier, { __index = Job })
 Courier.__index = Courier
 
-function Courier:new()
+function Courier:new(agent)
     local obj = Job:new()
     setmetatable(obj, Courier)
+    obj.agent = agent  -- 🗂️ Keep reference to the Agent with pos
     return obj
 end
 
@@ -43,14 +44,10 @@ function Courier:execute(task)
 
     print("Item: " .. desired_item .. "  Amount: " .. desired_amount)
 
-    -- === PATHFINDER ===
-    local pf = Pathfinder:new({ x = 32, y = 5, z = 0 }, "south")  -- TODO: your base coords & facing
+    local pf = Pathfinder:new(self.agent)
 
-    -- Go to origin chest (real world)
+    -- === GO TO ORIGIN ===
     pf:go_to(task.origin)
-
-    print("✅ After go_to origin: pos=", pf.pos.x, pf.pos.z)
-    print("✅ After go_to destination: pos=", pf.pos.x, pf.pos.z)
 
     local pickup_side = sides.front
     local slot, available = find_item_slot(pickup_side, desired_item)
@@ -66,11 +63,8 @@ function Courier:execute(task)
         print("❌ Item not found in pickup chest.")
     end
 
-    -- Go to destination chest (real world)
+    -- === GO TO DESTINATION ===
     pf:go_to(task.destination)
-
-    print("✅ After go_to origin: pos=", pf.pos.x, pf.pos.z)
-    print("✅ After go_to destination: pos=", pf.pos.x, pf.pos.z)
 
     if robot.drop(desired_amount) then
         print("✅ Dropped " .. desired_amount .. " of " .. desired_item)
@@ -78,8 +72,8 @@ function Courier:execute(task)
         print("⚠️ Nothing dropped.")
     end
 
-    -- Return to base origin
-     pf:go_to({ x = 32, y = 5, z = 0 })
+    -- === RETURN TO BASE ===
+    pf:go_to(self.agent.pos) -- back to Agent's current base
 
     print("✅ Courier job done.")
 end

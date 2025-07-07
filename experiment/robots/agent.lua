@@ -1,10 +1,14 @@
 -- agent.lua
--- Robot Agent: infinite task loop with safe waits
+-- Core RobotAgent class: controls robot main behavior loop and position
 
 local Agent = {}
 
 function Agent:new(network)
-    local obj = { network = network }
+    local obj = {
+        network = network,
+        pos = { x = 32, y = 5, z = 0 },  -- 📌 your known base world position
+        facing = "south"                 -- 📌 your known base facing
+    }
     setmetatable(obj, self)
     self.__index = self
     return obj
@@ -17,16 +21,16 @@ function Agent:run()
             -- Example: dynamic job load
             if task.type == "courier" then
                 local Courier = require("jobs.courier")
-                local courier_job = Courier:new()
+                local courier_job = Courier:new(self) -- pass Agent self
                 courier_job:execute(task)
             end
             self.network:report_done(task.id or "unknown")
-            os.sleep(3) -- ✅ Give server time to finish saving
+            os.sleep(3)
         else
             print("No tasks, waiting...")
-            os.sleep(5) -- ✅ Prevent spam
+            os.sleep(5)
         end
-        os.sleep(5) -- ✅ Always sleep 5s before next loop
+        os.sleep(5)
     end
 end
 
