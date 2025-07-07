@@ -1,5 +1,5 @@
 -- pathfinder.lua
--- Robust pathfinder with smart sidestep + dynamic realignment
+-- Robust: sidestep with stuck counter + facing lock
 
 local robot = require("robot")
 local fs = require("filesystem")
@@ -14,7 +14,6 @@ function Pathfinder:new(agent, task_id)
         log_file = "/experiment/data/debug_path_" .. tostring(task_id) .. ".log"
     }
     setmetatable(obj, self)
-
     local f = io.open(obj.log_file, "w")
     f:write("📍 Pathfinder Debug Log for Task ", tostring(task_id), "\n")
     f:close()
@@ -44,6 +43,17 @@ function Pathfinder:turn_to(direction)
         self.agent.facing = left_turns[self.agent.facing]
         self:save_state()
         self:log("🔄 Turn Left → Facing: " .. self.agent.facing)
+    end
+end
+
+function Pathfinder:face_target(target)
+    -- Face the target to align robot front
+    local dx = target.x - self.agent.pos.x
+    local dz = target.z - self.agent.pos.z
+    if math.abs(dx) > math.abs(dz) then
+        if dx > 0 then self:turn_to("east") else self:turn_to("west") end
+    else
+        if dz > 0 then self:turn_to("south") else self:turn_to("north") end
     end
 end
 
@@ -81,7 +91,7 @@ function Pathfinder:step_forward()
         end
     end
 
-    self:log("⚠️ Block ahead → Try sidestep left")
+    self:log("⚠️ Block → Try sidestep left")
     robot.turnLeft()
     if not robot.detect() then
         if robot.forward() then
@@ -105,7 +115,7 @@ function Pathfinder:step_forward()
     end
     robot.turnLeft()
 
-    self:log("⛔ Cannot bypass block.")
+    self:log("⛔ Fully blocked.")
     return false
 end
 
@@ -116,44 +126,38 @@ function Pathfinder:adjust_stop_before(target)
     elseif self.agent.pos.z == target.z then
         if target.x > self.agent.pos.x then adjust.x = adjust.x - 1 else adjust.x = adjust.x + 1 end
     end
-    self:log("✅ Stop adjusted: x="..adjust.x.." z="..adjust.z)
+    self:log("✅ Adjust stop: x="..adjust.x.." z="..adjust.z)
     return adjust
 end
 
 function Pathfinder:go_to(target)
-    self:log("🚩 Path: Start x="..self.agent.pos.x.." z="..self.agent.pos.z.." ➜ Target x="..target.x.." z="..target.z)
-
-    local max_attempts = 10
-    local attempts = 0
-
+    self:log("🚩 Path Start: x="..self.agent.pos.x.." z="..self.agent.pos.z.." ➜ Target x="..target.x.." z="..target.z)
+    local stuck = 0
     while true do
-        attempts = attempts + 1
-        if attempts > max_attempts then
-            self:log("❌ Too many attempts, aborting.")
-            break
-        end
-
         local dx = target.x - self.agent.pos.x
         local dz = target.z - self.agent.pos.z
         local dist = math.abs(dx) + math.abs(dz)
-
         if dist <= 1 then
-            self:log("✅ Close enough to target, stopping.")
+            self:log("✅ Close enough.")
             break
         end
-
         if math.abs(dx) >= math.abs(dz) then
             if dx > 0 then self:turn_to("east") else self:turn_to("west") end
         else
             if dz > 0 then self:turn_to("south") else self:turn_to("north") end
         end
 
-        if not self:step_forward() then
-            self:log("⚠️ Obstacle → loop to recalc")
+        if self:step_forward() then
+            stuck = 0
+        else
+            stuck = stuck + 1
+            if stuck >= 5 then
+                self:log("⛔ Stuck! Giving up.")
+                break
+            end
         end
     end
-
-    self:log(string.format("✅ Arrived: x=%s z=%s", self.agent.pos.x, self.agent.pos.z))
+    self:log("✅ Arrived at: x="..self.agent.pos.x.." z="..self.agent.pos.z)
 end
 
 return Pathfinder
