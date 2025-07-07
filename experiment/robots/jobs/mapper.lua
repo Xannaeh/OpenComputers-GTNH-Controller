@@ -1,7 +1,6 @@
--- Mapper Job: explores base and writes map nodes + edges
+-- Mapper Job: explores base by moving, turning, backtracking
 
 local robot = require("robot")
-local component = require("component")
 local serialization = require("serialization")
 local fs = require("filesystem")
 local Job = require("job")
@@ -16,6 +15,8 @@ function Mapper:new(agent)
     obj.agent = agent
     obj.map = obj:load_map()
     obj.visited = {}
+    obj.directions = { "north", "east", "south", "west" }
+    obj.left_turns = { north = "west", west = "south", south = "east", east = "north" }
     return obj
 end
 
@@ -27,6 +28,15 @@ end
 function Mapper:save_map()
     local f = io.open("/experiment/data/map.lua", "w")
     f:write("return " .. serialization.serialize(self.map))
+    f:close()
+end
+
+function Mapper:save_state()
+    local f = io.open("/experiment/data/robot_state.lua", "w")
+    f:write("return " .. serialization.serialize({
+        pos = self.agent.pos,
+        facing = self.agent.facing
+    }))
     f:close()
 end
 
@@ -46,25 +56,53 @@ function Mapper:is_visited(x, y, z)
     return self.visited[x .. "," .. y .. "," .. z] == true
 end
 
-function Mapper:explore(x, y, z, id)
+function Mapper:turn_to(direction)
+    while self.agent.facing ~= direction do
+        robot.turnLeft()
+        self.agent.facing = self.left_turns[self.agent.facing]
+    end
+    self:save_state()
+end
+
+function Mapper:next_pos()
+    local x, y, z = self.agent.pos.x, self.agent.pos.y, self.agent.pos.z
+    if self.agent.facing == "north" then z = z - 1
+    elseif self.agent.facing == "south" then z = z + 1
+    elseif self.agent.facing == "east" then x = x + 1
+    elseif self.agent.facing == "west" then x = x - 1 end
+    return x, y, z
+end
+
+function Mapper:explore(id)
+    local x, y, z = self.agent.pos.x, self.agent.pos.y, self.agent.pos.z
     self:mark_visited(x, y, z)
     self:add_node(x, y, z, id)
 
-    local directions = {
-        { dx =  1, dz =  0 },
-        { dx = -1, dz =  0 },
-        { dx =  0, dz =  1 },
-        { dx =  0, dz = -1 }
-    }
-
-    for _, dir in ipairs(directions) do
-        local nx, ny, nz = x + dir.dx, y, z + dir.dz
-
+    for _, dir in ipairs(self.directions) do
+        self:turn_to(dir)
+        local nx, ny, nz = self:next_pos()
         if not self:is_visited(nx, ny, nz) then
-            if not robot.detect() then -- crude check, adjust to real sensors!
+            if not robot.detect() then
                 local new_id = "Node_" .. nx .. "_" .. ny .. "_" .. nz
-                self:add_edge(id, new_id, 1) -- edge cost = 1 block for now
-                self:explore(nx, ny, nz, new_id)
+                self:add_edge(id, new_id, 1)
+
+                -- Move forward
+                if robot.forward() then
+                    self.agent.pos.x, self.agent.pos.y, self.agent.pos.z = nx, ny, nz
+                    self:save_state()
+                    self:explore(new_id) -- recurse
+
+                    -- Backtrack
+                    robot.turnLeft()
+                    robot.turnLeft()
+                    robot.forward()
+                    robot.turnLeft()
+                    robot.turnLeft()
+
+                    -- Reset pos after backtracking
+                    self.agent.pos.x, self.agent.pos.y, self.agent.pos.z = x, y, z
+                    self:save_state()
+                end
             end
         end
     end
@@ -78,9 +116,11 @@ function Mapper:execute()
     elseif pos.x == 35 and pos.z == 2 then id = "Charging2"
     else id = "Node_" .. pos.x .. "_" .. pos.y .. "_" .. pos.z end
 
-    self:explore(pos.x, pos.y, pos.z, id)
+    self:explore(id)
     self:save_map()
     self.agent.network:send_update_map(self.map)
+
+    print("✅ Mapper finished exploration.")
 end
 
 return Mapper
