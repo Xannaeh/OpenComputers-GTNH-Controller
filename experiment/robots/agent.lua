@@ -2,7 +2,6 @@
 -- Loads position from state or sets defaults
 
 local fs = require("filesystem")
-local serialization = require("serialization")
 
 local Agent = {}
 
@@ -10,27 +9,37 @@ function Agent:new(network)
     local obj = { network = network }
 
     if fs.exists("/experiment/data/robot_state.lua") then
+        print("🗂️ Found saved robot_state.lua, loading...")
         local ok, chunk = pcall(loadfile, "/experiment/data/robot_state.lua")
         if ok and chunk then
             local state = chunk()
-            obj.pos = state.pos
-            obj.facing = state.facing
-            print("✅ Loaded robot state:", obj.pos.x, obj.pos.y, obj.pos.z, "facing", obj.facing)
+            if state then
+                obj.pos = state.pos
+                obj.facing = state.facing
+                print(string.format("✅ Loaded pos: x=%s y=%s z=%s facing=%s",
+                        obj.pos.x, obj.pos.y, obj.pos.z, obj.facing))
+            else
+                print("⚠️ Loaded chunk but no data. Using defaults.")
+                obj.pos = { x = 32, y = 5, z = 0 }
+                obj.facing = "south"
+            end
         else
-            print("⚠️ Failed to load robot state. Using defaults.")
+            print("⚠️ Failed to load robot_state chunk. Using defaults.")
             obj.pos = { x = 32, y = 5, z = 0 }
             obj.facing = "south"
         end
     else
+        print("ℹ️ No robot_state.lua found. Using defaults.")
         obj.pos = { x = 32, y = 5, z = 0 }
         obj.facing = "south"
-        print("ℹ️ No robot_state.lua found. Using defaults.")
     end
 
     setmetatable(obj, self)
     self.__index = self
     return obj
 end
+
+return Agent
 
 function Agent:run()
     while true do
