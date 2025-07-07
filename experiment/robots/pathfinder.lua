@@ -128,25 +128,40 @@ function Pathfinder:go_to(target)
 
     self:log("🚩 Path: Start x="..self.agent.pos.x.." z="..self.agent.pos.z.." ➜ Target x="..target.x.." z="..target.z)
 
+    local attempts = 0
+    local max_attempts = 200
+
     while true do
+        attempts = attempts + 1
+        if attempts > max_attempts then
+            self:log("❌ Stuck! Max attempts reached.")
+            break
+        end
+
         local dx = target.x - self.agent.pos.x
         local dz = target.z - self.agent.pos.z
+        local dist = math.abs(dx) + math.abs(dz)
 
-        if math.abs(dx) > 0 then
-            if dx > 0 then self:turn_to("east") else self:turn_to("west") end
-        elseif math.abs(dz) > 0 then
-            if dz > 0 then self:turn_to("south") else self:turn_to("north") end
-        else
+        -- 📏 If close enough (1 block)
+        if dist <= 1 then
+            self:log("✅ Close enough to target. Stopping.")
             break
+        end
+
+        -- Pick axis with more distance first
+        if math.abs(dx) >= math.abs(dz) then
+            if dx > 0 then self:turn_to("east") else self:turn_to("west") end
+        else
+            if dz > 0 then self:turn_to("south") else self:turn_to("north") end
         end
 
         if not self:step_forward() then
-            self:log("⛔ Movement blocked → Stopping")
-            break
+            self:log("⛔ Path blocked → try next loop iteration")
         end
     end
 
-    self:log("✅ Arrived at: x="..self.agent.pos.x.." z="..self.agent.pos.z)
+    self:log("✅ Arrived: x="..self.agent.pos.x.." z="..self.agent.pos.z)
 end
+
 
 return Pathfinder
