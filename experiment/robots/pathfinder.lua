@@ -23,7 +23,7 @@ function Pathfinder:turn_to(direction)
     end
 end
 
-function Pathfinder:go_to(target)
+function Pathfinder:go_to(target, stop_before)
     if not target then
         error("Pathfinder:go_to() called with nil target")
     end
@@ -36,18 +36,12 @@ function Pathfinder:go_to(target)
     local dx = target.x - self.agent.pos.x
     local dz = target.z - self.agent.pos.z
 
-    -- Subtract 1 block to stop **in front**
-    if dx ~= 0 then
-        if dx > 0 then
-            dx = dx - 1  -- approach from west
-        else
-            dx = dx + 1  -- approach from east
-        end
-    elseif dz ~= 0 then
-        if dz > 0 then
-            dz = dz - 1  -- approach from north
-        else
-            dz = dz + 1  -- approach from south
+    -- Only stop short if told to
+    if stop_before then
+        if dx ~= 0 then
+            if dx > 0 then dx = dx - 1 else dx = dx + 1 end
+        elseif dz ~= 0 then
+            if dz > 0 then dz = dz - 1 else dz = dz + 1 end
         end
     end
 
@@ -67,6 +61,7 @@ function Pathfinder:go_to(target)
 
     print("✅ [Pathfinder] Arrived at: x="..self.agent.pos.x.." z="..self.agent.pos.z)
 end
+
 
 
 

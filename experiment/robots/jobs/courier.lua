@@ -48,7 +48,7 @@ function Courier:execute(task)
 
     -- === GO TO ORIGIN ===
     print("\n📌 GOING TO ORIGIN:", task.origin and ("x="..tostring(task.origin.x).." z="..tostring(task.origin.z)) or "NIL")
-    pf:go_to(task.origin)
+    pf:go_to(task.origin,true)
 
     local pickup_side = sides.front
     local slot, available = find_item_slot(pickup_side, desired_item)
@@ -66,7 +66,7 @@ function Courier:execute(task)
 
     -- === GO TO DESTINATION ===
     print("\n📌 GOING TO DESTINATION:", task.destination and ("x="..tostring(task.destination.x).." z="..tostring(task.destination.z)) or "NIL")
-    pf:go_to(task.destination)
+    pf:go_to(task.destination,true)
 
     if robot.drop(desired_amount) then
         print("✅ Dropped " .. desired_amount .. " of " .. desired_item)
@@ -76,7 +76,7 @@ function Courier:execute(task)
 
     -- === RETURN TO BASE ===
     print("\n📌 GOING HOME:", self.agent.pos and ("x="..tostring(self.agent.pos.x).." z="..tostring(self.agent.pos.z)) or "NIL")
-    pf:go_to(self.agent.home)
+    pf:go_to(self.agent.home,false)
 
     print("✅ Courier job done.")
 end
