@@ -101,8 +101,22 @@ function Pathfinder:step_forward(goal)
     return false
 end
 
+function Pathfinder:face_target_block(target)
+    local dx = target.x - self.agent.pos.x
+    local dz = target.z - self.agent.pos.z
+
+    if math.abs(dx) > math.abs(dz) then
+        if dx > 0 then self:turn_to("east") else self:turn_to("west") end
+    else
+        if dz > 0 then self:turn_to("south") else self:turn_to("north") end
+    end
+
+    self:log(string.format("🎯 Facing block: dx=%s dz=%s → %s", dx, dz, self.agent.facing))
+end
+
 function Pathfinder:try_targets(targets)
-    self.visited = {} -- clear visited for this trip
+    self.visited = {}
+    self:mark_visited(self.agent.pos.x, self.agent.pos.z)  -- 👈 mark start
 
     for _, target in ipairs(targets) do
         self:log(string.format("🎯 Trying target: x=%s z=%s", target.x, target.z))
