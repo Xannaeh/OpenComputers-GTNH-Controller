@@ -35,32 +35,38 @@ function Pathfinder:turn_to(direction)
 end
 
 function Pathfinder:step_forward()
-    -- Try forward
+    -- Try normal forward
     if not robot.detect() then
-        if robot.forward() then return true end
+        if robot.forward() then
+            return true
+        end
     end
+
+    print("⚠️ Block detected: trying sidestep...")
 
     -- Try sidestep left
     robot.turnLeft()
     if not robot.detect() then
         if robot.forward() then
             robot.turnRight()
+            print("✅ Sidestepped left, resuming path...")
             return true
         end
     end
-    robot.turnRight() -- undo left
+    robot.turnRight()
 
     -- Try sidestep right
     robot.turnRight()
     if not robot.detect() then
         if robot.forward() then
             robot.turnLeft()
+            print("✅ Sidestepped right, resuming path...")
             return true
         end
     end
-    robot.turnLeft() -- undo right
+    robot.turnLeft()
 
-    print("⚠️ Obstacle detected: cannot move forward or around.")
+    print("❌ Obstacle too big to bypass.")
     return false
 end
 
@@ -88,25 +94,35 @@ function Pathfinder:go_to(target)
     local dx = target.x - self.agent.pos.x
     local dz = target.z - self.agent.pos.z
 
-    -- X axis
+    print(string.format("📍 Moving to XZ: Δx=%d Δz=%d", dx, dz))
+
+    -- X axis first
     if dx ~= 0 then
         if dx > 0 then self:turn_to("east") else self:turn_to("west") end
         for i = 1, math.abs(dx) do
-            if not self:step_forward() then break end
+            if not self:step_forward() then
+                print("⛔ Path blocked on X axis")
+                break
+            end
             self.agent.pos.x = self.agent.pos.x + (dx > 0 and 1 or -1)
             self:save_state()
         end
     end
 
-    -- Z axis
+    -- Z axis next
     if dz ~= 0 then
         if dz > 0 then self:turn_to("south") else self:turn_to("north") end
         for i = 1, math.abs(dz) do
-            if not self:step_forward() then break end
+            if not self:step_forward() then
+                print("⛔ Path blocked on Z axis")
+                break
+            end
             self.agent.pos.z = self.agent.pos.z + (dz > 0 and 1 or -1)
             self:save_state()
         end
     end
+
+    -- Later: add Y movement logic if needed
 end
 
 return Pathfinder
