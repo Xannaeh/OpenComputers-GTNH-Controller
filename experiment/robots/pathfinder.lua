@@ -91,8 +91,11 @@ end
 function Pathfinder:go_to(target)
     if not target then error("Pathfinder:go_to() nil target") end
 
-    local dx = target.x - self.agent.pos.x
-    local dz = target.z - self.agent.pos.z
+    local tx, tz = tonumber(target.x), tonumber(target.z)
+    local cx, cz = tonumber(self.agent.pos.x), tonumber(self.agent.pos.z)
+
+    local dx = tx - cx
+    local dz = tz - cz
 
     print(string.format("📍 Moving to XZ: Δx=%d Δz=%d", dx, dz))
 

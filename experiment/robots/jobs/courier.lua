@@ -47,8 +47,13 @@ function Courier:execute(task)
     local pf = Pathfinder:new(self.agent)
 
     -- === GO TO ORIGIN ===
-    print("\n📌 GOING TO ORIGIN:", task.origin and ("x="..tostring(task.origin.x).." z="..tostring(task.origin.z)) or "NIL")
-    pf:go_to(task.origin,true)
+    local origin = {
+        x = tonumber(task.origin.x),
+        y = tonumber(task.origin.y),
+        z = tonumber(task.origin.z)
+    }
+    print(string.format("\n📌 GOING TO ORIGIN: x=%s z=%s", origin.x, origin.z))
+    pf:go_to(origin, true)
 
     local pickup_side = sides.front
     local slot, available = find_item_slot(pickup_side, desired_item)
@@ -65,8 +70,13 @@ function Courier:execute(task)
     end
 
     -- === GO TO DESTINATION ===
-    print("\n📌 GOING TO DESTINATION:", task.destination and ("x="..tostring(task.destination.x).." z="..tostring(task.destination.z)) or "NIL")
-    pf:go_to(task.destination,true)
+    local destination = {
+        x = tonumber(task.destination.x),
+        y = tonumber(task.destination.y),
+        z = tonumber(task.destination.z)
+    }
+    print(string.format("\n📌 GOING TO DESTINATION: x=%s z=%s", destination.x, destination.z))
+    pf:go_to(destination, true)
 
     if robot.drop(desired_amount) then
         print("✅ Dropped " .. desired_amount .. " of " .. desired_item)
@@ -75,10 +85,16 @@ function Courier:execute(task)
     end
 
     -- === RETURN TO BASE ===
-    print("\n📌 GOING HOME:", self.agent.pos and ("x="..tostring(self.agent.pos.x).." z="..tostring(self.agent.pos.z)) or "NIL")
-    pf:go_to(self.agent.home,false)
+    local home = {
+        x = tonumber(self.agent.home and self.agent.home.x or self.agent.pos.x),
+        y = tonumber(self.agent.home and self.agent.home.y or self.agent.pos.y),
+        z = tonumber(self.agent.home and self.agent.home.z or self.agent.pos.z)
+    }
+    print(string.format("\n📌 GOING HOME: x=%s z=%s", home.x, home.z))
+    pf:go_to(home, false)
 
     print("✅ Courier job done.")
 end
+
 
 return Courier
