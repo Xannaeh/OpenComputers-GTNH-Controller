@@ -1,5 +1,5 @@
 -- agent.lua
--- Loads robot state AND static config separately
+-- Loads robot state + static config with clear debug
 
 local fs = require("filesystem")
 
@@ -8,26 +8,38 @@ local Agent = {}
 function Agent:new(network)
     local obj = { network = network }
 
-    -- Load static config
-    if fs.exists("/experiment/data/config.lua") then
-        local cfg = dofile("/experiment/data/robot_config.lua")
-        obj.role = cfg.role or "courier"
-        obj.home = cfg.home or { x = 32, y = 5, z = 0 }
+    -- Load static robot config
+    if fs.exists("/experiment/data/robot_config.lua") then
+        print("🔍 Loading robot_config.lua...")
+        local ok, cfg = pcall(dofile, "/experiment/data/robot_config.lua")
+        if ok and cfg then
+            obj.role = cfg.role or "courier"
+            obj.home = cfg.home or { x = 0, y = 5, z = 0 }
+            print(string.format("✅ Config: role=%s, home=%s,%s,%s",
+                    obj.role, obj.home.x, obj.home.y, obj.home.z))
+        else
+            print("⚠️ Failed to load config, fallback to courier.")
+            obj.role = "courier"
+            obj.home = { x = 0, y = 5, z = 0 }
+        end
     else
+        print("⚠️ No robot_config.lua found, fallback to courier.")
         obj.role = "courier"
-        obj.home = { x = 32, y = 5, z = 0 }
+        obj.home = { x = 0, y = 5, z = 0 }
     end
 
+    -- Load dynamic robot state
     obj.facing = "south"
-
     if fs.exists("/experiment/data/robot_state.lua") then
-        print("🗂️ Found saved robot_state.lua, loading...")
+        print("🔍 Loading robot_state.lua...")
         local ok, chunk = pcall(loadfile, "/experiment/data/robot_state.lua")
         if ok and chunk then
             local state = chunk()
             if state then
                 obj.pos = state.pos or obj.home
                 obj.facing = state.facing or "south"
+                print(string.format("✅ State: pos=%s,%s,%s facing=%s",
+                        obj.pos.x, obj.pos.y, obj.pos.z, obj.facing))
             else
                 obj.pos = obj.home
             end
@@ -38,8 +50,8 @@ function Agent:new(network)
         obj.pos = obj.home
     end
 
-    print(string.format("✅ Loaded: pos=%s,%s,%s facing=%s role=%s",
-            obj.pos.x, obj.pos.y, obj.pos.z, obj.facing, obj.role))
+    print(string.format("🤖 Final: role=%s pos=%s,%s,%s facing=%s",
+            obj.role, obj.pos.x, obj.pos.y, obj.pos.z, obj.facing))
 
     setmetatable(obj, self)
     self.__index = self
@@ -47,13 +59,13 @@ function Agent:new(network)
 end
 
 function Agent:run()
-    print("🤖 Running as role: " .. self.role)
+    print("🚦 Agent running in mode: " .. self.role)
 
     if self.role == "mapper" then
         local Mapper = require("jobs.mapper")
         local mapper_job = Mapper:new(self)
         mapper_job:execute()
-        print("🗺️ Mapper job done.")
+        print("✅ Mapper run complete.")
         return
     end
 
@@ -68,7 +80,7 @@ function Agent:run()
             self.network:report_done(task.id or "unknown")
             os.sleep(3)
         else
-            print("No tasks, waiting...")
+            print("⏳ No tasks. Waiting...")
             os.sleep(5)
         end
     end

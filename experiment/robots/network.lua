@@ -1,5 +1,4 @@
--- network.lua
--- Robot network helper for talking to the server dispatcher
+-- Robot network helper with clear debug logging
 
 local component = require("component")
 local event = require("event")
@@ -22,36 +21,35 @@ function Network:new()
 end
 
 function Network:request_task()
-    -- Broadcast a task request
     self.modem.broadcast(self.PORT, "request_task")
-    print("📡 Sent task request.")
+    print("📡 Sent: request_task")
 
-    -- Wait for response
     local _, _, _, port, _, message = event.pull(5, "modem_message")
     if port == self.PORT and message then
+        print("📡 Got reply: " .. tostring(message))
         if message == "no_task" then
             print("⚠️ No task available.")
             return nil
         else
             local task = serialization.unserialize(message)
-            print("✅ Task received.")
+            print("✅ Task received: " .. serialization.serialize(task))
             return task
         end
     else
-        print("⏰ No response.")
+        print("⏰ No response for task request.")
         return nil
     end
 end
 
 function Network:report_done(id)
     self.modem.broadcast(self.PORT, "task_done:" .. id)
-    print("✅ Reported task done for ID: " .. id)
+    print("📡 Reported task done: " .. id)
 end
 
 function Network:send_update_map(map)
-    self.modem.broadcast(self.PORT, "UPDATE_MAP:" .. serialization.serialize(map))
-    print("✅ Sent updated map to server")
+    local payload = serialization.serialize(map)
+    self.modem.broadcast(self.PORT, "UPDATE_MAP:" .. payload)
+    print("📡 Sent UPDATE_MAP payload: " .. payload:sub(1, 100) .. "...")
 end
-
 
 return Network

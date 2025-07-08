@@ -1,5 +1,4 @@
--- main.lua
--- Server main loop: listens for robots, dispatches tasks
+-- Server main loop with debug logging
 
 package.path = package.path .. ";/experiment/server/?.lua"
 
@@ -11,40 +10,46 @@ local computer = require("computer")
 local modem = component.modem
 local Dispatcher = require("dispatcher")
 
--- Open port
 local PORT = 1234
 modem.open(PORT)
 
-print("Server dispatcher running. Listening on port " .. PORT)
+print("🌐 Server dispatcher online. Port: " .. PORT)
 
 local dispatcher = Dispatcher:new()
 
 while true do
     local _, _, from, port, _, message = event.pull("modem_message")
 
+    print(string.format("📡 Incoming: from=%s port=%s msg=%s", tostring(from), tostring(port), tostring(message)))
+
     if port == PORT then
         if message == "request_task" then
             local task = dispatcher:get_next_task()
             if task then
-                modem.send(from, PORT, serialization.serialize(task))
-                print("Sent task to " .. from)
+                local payload = serialization.serialize(task)
+                modem.send(from, PORT, payload)
+                print("✅ Sent task to: " .. tostring(from))
             else
                 modem.send(from, PORT, "no_task")
-                print("No tasks left.")
+                print("⚠️ No tasks left.")
             end
 
         elseif message:find("task_done:") == 1 then
             local id = message:sub(11)
             dispatcher:mark_done(id)
-            print("✅ Task " .. id .. " marked done.")
-            os.sleep(0.1) -- ✅ Small wait to guarantee disk flush
+            print("✅ Marked done: " .. id)
 
         elseif message:find("UPDATE_MAP:") == 1 then
             local data = message:sub(12)
-            local map = serialization.unserialize(data)
-            local registry = require("registry")
-            registry:merge_map(map)
-            print("🗺️ Merged received map.")
+            print("📡 Raw UPDATE_MAP data: " .. data:sub(1, 100) .. "...")
+            local ok, map = pcall(serialization.unserialize, data)
+            if ok and map then
+                local registry = require("registry")
+                registry:merge_map(map)
+                print("🗺️ Merged map update OK.")
+            else
+                print("❌ Failed to unserialize map update: " .. tostring(map))
+            end
         end
     end
 end
