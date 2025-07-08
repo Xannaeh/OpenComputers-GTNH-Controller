@@ -67,6 +67,7 @@ local function main()
   ensureFile("/experiment/data/tasks.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/data/tasks.lua")
   ensureFile("/experiment/data/robot_state.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/data/robot_state.lua")
   ensureFile("/experiment/data/map.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/data/map.lua")
+  ensureFile("/experiment/data/robot_config.lua", "https://raw.githubusercontent.com/Xannaeh/OpenComputers-GTNH-Controller/main/experiment/data/robot_config.lua")
 
   print("\n✅ Setup complete! Run your robot with: lua /experiment/robots/main.lua")
 end
