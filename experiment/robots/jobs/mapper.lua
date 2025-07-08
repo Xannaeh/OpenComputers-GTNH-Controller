@@ -1,4 +1,4 @@
--- Mapper Job: explores base by moving, turning, backtracking
+-- Fixed Mapper: fully explores all reachable blocks
 
 local robot = require("robot")
 local serialization = require("serialization")
@@ -14,9 +14,9 @@ function Mapper:new(agent)
     setmetatable(obj, Mapper)
     obj.agent = agent
     obj.map = obj:load_map()
-    obj.visited = {}
-    obj.directions = { "north", "east", "south", "west" }
+    obj.visited_nodes = {}
     obj.left_turns = { north = "west", west = "south", south = "east", east = "north" }
+    obj.directions = { "north", "east", "south", "west" }
     return obj
 end
 
@@ -48,12 +48,12 @@ function Mapper:add_edge(from_id, to_id, cost)
     table.insert(self.map.edges, { from = from_id, to = to_id, cost = cost })
 end
 
-function Mapper:mark_visited(x, y, z)
-    self.visited[x .. "," .. y .. "," .. z] = true
+function Mapper:is_node_visited(x, y, z)
+    return self.visited_nodes[x .. "," .. y .. "," .. z] == true
 end
 
-function Mapper:is_visited(x, y, z)
-    return self.visited[x .. "," .. y .. "," .. z] == true
+function Mapper:mark_node_visited(x, y, z)
+    self.visited_nodes[x .. "," .. y .. "," .. z] = true
 end
 
 function Mapper:turn_to(direction)
@@ -73,36 +73,36 @@ function Mapper:next_pos()
     return x, y, z
 end
 
-function Mapper:explore(id)
+function Mapper:dfs(from_id)
     local x, y, z = self.agent.pos.x, self.agent.pos.y, self.agent.pos.z
-    self:mark_visited(x, y, z)
-    self:add_node(x, y, z, id)
+
+    if not self:is_node_visited(x, y, z) then
+        local id = "Node_" .. x .. "_" .. y .. "_" .. z
+        self:add_node(x, y, z, id)
+        self:add_edge(from_id, id, 1)
+        self:mark_node_visited(x, y, z)
+        from_id = id
+    end
 
     for _, dir in ipairs(self.directions) do
         self:turn_to(dir)
         local nx, ny, nz = self:next_pos()
-        if not self:is_visited(nx, ny, nz) then
-            if not robot.detect() then
-                local new_id = "Node_" .. nx .. "_" .. ny .. "_" .. nz
-                self:add_edge(id, new_id, 1)
 
-                -- Move forward
-                if robot.forward() then
-                    self.agent.pos.x, self.agent.pos.y, self.agent.pos.z = nx, ny, nz
-                    self:save_state()
-                    self:explore(new_id) -- recurse
+        if not robot.detect() and not self:is_node_visited(nx, ny, nz) then
+            if robot.forward() then
+                self.agent.pos.x, self.agent.pos.y, self.agent.pos.z = nx, ny, nz
+                self:save_state()
+                self:dfs(from_id)
 
-                    -- Backtrack
-                    robot.turnLeft()
-                    robot.turnLeft()
-                    robot.forward()
-                    robot.turnLeft()
-                    robot.turnLeft()
+                -- Backtrack
+                robot.turnLeft()
+                robot.turnLeft()
+                robot.forward()
+                robot.turnLeft()
+                robot.turnLeft()
 
-                    -- Reset pos after backtracking
-                    self.agent.pos.x, self.agent.pos.y, self.agent.pos.z = x, y, z
-                    self:save_state()
-                end
+                self.agent.pos.x, self.agent.pos.y, self.agent.pos.z = x, y, z
+                self:save_state()
             end
         end
     end
@@ -110,17 +110,19 @@ end
 
 function Mapper:execute()
     local pos = self.agent.pos
-    local id = "Unknown"
+    local id = "MapperStart"
 
     if pos.x == 32 and pos.z == 0 then id = "Charging1"
-    elseif pos.x == 35 and pos.z == 2 then id = "Charging2"
-    else id = "Node_" .. pos.x .. "_" .. pos.y .. "_" .. pos.z end
+    elseif pos.x == 35 and pos.z == 2 then id = "Charging2" end
 
-    self:explore(id)
+    self:mark_node_visited(pos.x, pos.y, pos.z)
+    self:add_node(pos.x, pos.y, pos.z, id)
+
+    self:dfs(id)
+
     self:save_map()
     self.agent.network:send_update_map(self.map)
-
-    print("✅ Mapper finished exploration.")
+    print("✅ Full DFS mapping complete.")
 end
 
 return Mapper
