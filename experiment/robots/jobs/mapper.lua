@@ -1,4 +1,4 @@
--- Fixed Mapper: fully explores all reachable blocks
+-- Robust DFS Mapper: safe turns, detects, marks walls
 
 local robot = require("robot")
 local serialization = require("serialization")
@@ -15,8 +15,9 @@ function Mapper:new(agent)
     obj.agent = agent
     obj.map = obj:load_map()
     obj.visited_nodes = {}
-    obj.left_turns = { north = "west", west = "south", south = "east", east = "north" }
     obj.directions = { "north", "east", "south", "west" }
+    obj.turn_left = { north = "west", west = "south", south = "east", east = "north" }
+    obj.turn_right = { north = "east", east = "south", south = "west", west = "north" }
     return obj
 end
 
@@ -44,8 +45,8 @@ function Mapper:add_node(x, y, z, id)
     table.insert(self.map.nodes, { id = id, x = x, y = y, z = z })
 end
 
-function Mapper:add_edge(from_id, to_id, cost)
-    table.insert(self.map.edges, { from = from_id, to = to_id, cost = cost })
+function Mapper:add_edge(from_id, to_id, cost, blocked)
+    table.insert(self.map.edges, { from = from_id, to = to_id, cost = cost, blocked = blocked })
 end
 
 function Mapper:is_node_visited(x, y, z)
@@ -56,10 +57,17 @@ function Mapper:mark_node_visited(x, y, z)
     self.visited_nodes[x .. "," .. y .. "," .. z] = true
 end
 
-function Mapper:turn_to(direction)
-    while self.agent.facing ~= direction do
-        robot.turnLeft()
-        self.agent.facing = self.left_turns[self.agent.facing]
+function Mapper:turn_to(target)
+    while self.agent.facing ~= target do
+        -- Pick shortest turn: left or right
+        local left = self.turn_left[self.agent.facing]
+        if left == target then
+            robot.turnLeft()
+            self.agent.facing = left
+        else
+            robot.turnRight()
+            self.agent.facing = self.turn_right[self.agent.facing]
+        end
     end
     self:save_state()
 end
@@ -79,7 +87,7 @@ function Mapper:dfs(from_id)
     if not self:is_node_visited(x, y, z) then
         local id = "Node_" .. x .. "_" .. y .. "_" .. z
         self:add_node(x, y, z, id)
-        self:add_edge(from_id, id, 1)
+        self:add_edge(from_id, id, 1, false)
         self:mark_node_visited(x, y, z)
         from_id = id
     end
@@ -87,8 +95,13 @@ function Mapper:dfs(from_id)
     for _, dir in ipairs(self.directions) do
         self:turn_to(dir)
         local nx, ny, nz = self:next_pos()
+        local edge_id = "Node_" .. nx .. "_" .. ny .. "_" .. nz
 
-        if not robot.detect() and not self:is_node_visited(nx, ny, nz) then
+        -- Always detect before moving
+        if robot.detect() then
+            -- Mark blocked edge in map
+            self:add_edge(from_id, edge_id, 1, true)
+        elseif not self:is_node_visited(nx, ny, nz) then
             if robot.forward() then
                 self.agent.pos.x, self.agent.pos.y, self.agent.pos.z = nx, ny, nz
                 self:save_state()
@@ -122,7 +135,7 @@ function Mapper:execute()
 
     self:save_map()
     self.agent.network:send_update_map(self.map)
-    print("✅ Full DFS mapping complete.")
+    print("✅ Full robust DFS mapping done.")
 end
 
 return Mapper
