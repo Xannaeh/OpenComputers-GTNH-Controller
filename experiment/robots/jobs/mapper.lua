@@ -1,5 +1,3 @@
--- Robust DFS Mapper: safe turns, detects, marks walls
-
 local robot = require("robot")
 local serialization = require("serialization")
 local fs = require("filesystem")
@@ -14,7 +12,7 @@ function Mapper:new(agent)
     setmetatable(obj, Mapper)
     obj.agent = agent
     obj.map = obj:load_map()
-    obj.visited_nodes = {}
+    obj.visited = {}
     obj.directions = { "north", "east", "south", "west" }
     obj.turn_left = { north = "west", west = "south", south = "east", east = "north" }
     obj.turn_right = { north = "east", east = "south", south = "west", west = "north" }
@@ -41,33 +39,27 @@ function Mapper:save_state()
     f:close()
 end
 
-function Mapper:add_node(x, y, z, id)
-    table.insert(self.map.nodes, { id = id, x = x, y = y, z = z })
+function Mapper:mark(x, y, z)
+    self.visited[x .. "," .. y .. "," .. z] = true
 end
 
-function Mapper:add_edge(from_id, to_id, cost, blocked)
-    table.insert(self.map.edges, { from = from_id, to = to_id, cost = cost, blocked = blocked })
+function Mapper:is_marked(x, y, z)
+    return self.visited[x .. "," .. y .. "," .. z]
 end
 
-function Mapper:is_node_visited(x, y, z)
-    return self.visited_nodes[x .. "," .. y .. "," .. z] == true
+function Mapper:add_node(x, y, z)
+    table.insert(self.map.nodes, { id = "Node_" .. x .. "_" .. y .. "_" .. z, x = x, y = y, z = z })
 end
 
-function Mapper:mark_node_visited(x, y, z)
-    self.visited_nodes[x .. "," .. y .. "," .. z] = true
+function Mapper:add_edge(from, to, blocked)
+    table.insert(self.map.edges, { from = from, to = to, blocked = blocked })
 end
 
 function Mapper:turn_to(target)
     while self.agent.facing ~= target do
-        -- Pick shortest turn: left or right
-        local left = self.turn_left[self.agent.facing]
-        if left == target then
-            robot.turnLeft()
-            self.agent.facing = left
-        else
-            robot.turnRight()
-            self.agent.facing = self.turn_right[self.agent.facing]
-        end
+        -- Always prefer left first (simpler)
+        robot.turnLeft()
+        self.agent.facing = self.turn_left[self.agent.facing]
     end
     self:save_state()
 end
@@ -83,29 +75,28 @@ end
 
 function Mapper:dfs(from_id)
     local x, y, z = self.agent.pos.x, self.agent.pos.y, self.agent.pos.z
+    local id = "Node_" .. x .. "_" .. y .. "_" .. z
 
-    if not self:is_node_visited(x, y, z) then
-        local id = "Node_" .. x .. "_" .. y .. "_" .. z
-        self:add_node(x, y, z, id)
-        self:add_edge(from_id, id, 1, false)
-        self:mark_node_visited(x, y, z)
-        from_id = id
+    if not self:is_marked(x, y, z) then
+        self:add_node(x, y, z)
+        self:mark(x, y, z)
     end
 
     for _, dir in ipairs(self.directions) do
         self:turn_to(dir)
         local nx, ny, nz = self:next_pos()
-        local edge_id = "Node_" .. nx .. "_" .. ny .. "_" .. nz
+        local nid = "Node_" .. nx .. "_" .. ny .. "_" .. nz
 
-        -- Always detect before moving
         if robot.detect() then
-            -- Mark blocked edge in map
-            self:add_edge(from_id, edge_id, 1, true)
-        elseif not self:is_node_visited(nx, ny, nz) then
+            self:add_edge(id, nid, true)
+        elseif not self:is_marked(nx, ny, nz) then
+            self:add_edge(id, nid, false)
+
             if robot.forward() then
                 self.agent.pos.x, self.agent.pos.y, self.agent.pos.z = nx, ny, nz
                 self:save_state()
-                self:dfs(from_id)
+
+                self:dfs(nid)
 
                 -- Backtrack
                 robot.turnLeft()
@@ -123,19 +114,16 @@ end
 
 function Mapper:execute()
     local pos = self.agent.pos
-    local id = "MapperStart"
+    local start_id = "Node_" .. pos.x .. "_" .. pos.y .. "_" .. pos.z
 
-    if pos.x == 32 and pos.z == 0 then id = "Charging1"
-    elseif pos.x == 35 and pos.z == 2 then id = "Charging2" end
+    self:add_node(pos.x, pos.y, pos.z)
+    self:mark(pos.x, pos.y, pos.z)
 
-    self:mark_node_visited(pos.x, pos.y, pos.z)
-    self:add_node(pos.x, pos.y, pos.z, id)
-
-    self:dfs(id)
+    self:dfs(start_id)
 
     self:save_map()
     self.agent.network:send_update_map(self.map)
-    print("✅ Full robust DFS mapping done.")
+    print("✅ Mapping done. Map saved & sent.")
 end
 
 return Mapper
